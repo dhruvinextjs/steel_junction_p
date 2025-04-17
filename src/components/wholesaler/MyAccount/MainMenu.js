@@ -9,12 +9,12 @@ import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useRouter } from "nextjs-toploader/app";
 import { useRole } from "@/app/context/RoleContext";
-
+ 
 const MainMenu = ({ onTabChange, tabMenu }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { role } = useRole();
-
+ 
   function hanldeLogoutFn() {
     if (!window.confirm("are you sure")) return;
     toast.loading("Logout...");
@@ -26,7 +26,7 @@ const MainMenu = ({ onTabChange, tabMenu }) => {
       toast.remove();
     }, 1000);
   }
-
+ 
   return (
     <div className="px-2 py-3 space-y-2 xl:py-5 xl:px-4">
       <p className="text-xl text-[#25324B] font-semibold title heading mb-5">
@@ -176,5 +176,5 @@ const MainMenu = ({ onTabChange, tabMenu }) => {
     </div>
   );
 };
-
+ 
 export default MainMenu;

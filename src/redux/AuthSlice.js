@@ -27,7 +27,7 @@ export const handleSendOtp = createAsyncThunk(
   async ({ mobileNumber }, { rejectWithValue }) => {
     const formData = new FormData();
     formData.append("mobileNumber", mobileNumber);
-
+ 
     try {
       const { data } = await PostUrl("/auth/sendOtp", {
         method: "POST",
@@ -111,27 +111,6 @@ export const handleSignup = createAsyncThunk(
   }
 );
 
-// // signin
-// export const handleSignin = createAsyncThunk(
-//   "auth/handleSignin",
-//   async ({ mobileNumber }, { rejectWithValue }) => {
-//     try {
-//       const { data } = await PostUrl("/auth/login", {
-//         data: { mobileNumber },
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//         },
-//       });
-//       return data;
-//     } catch (error) {
-//       if (error?.response?.data?.message) {
-//         toast.error(error?.response?.data?.message);
-//       }
-//       return rejectWithValue(error?.response?.data);
-//     }
-//   }
-// );
-
 // handleSignin action with token storage
 export const handleSignin = createAsyncThunk(
   "auth/handleSignin",
@@ -194,49 +173,78 @@ export const handleCheckLoginPasscode = createAsyncThunk(
 );
 
 // Edit Profile
+
 // export const handleEditProfile = createAsyncThunk(
 //   "auth/handleEditProfile",
 //   async (formData, { rejectWithValue }) => {
-//     const token = getToken();
-//     if (!token) return rejectWithValue("Authentication token not found.");
+//     console.log("Token retrieved:", token); // Log token
 
-//     try {
-//       const { data } = await PutUrl("/auth/editProfile", {
-//         data: formData,
+//     if (!token) {
+//       toast.error("Please provide an authentication token.");
+//       return rejectWithValue("Authentication token not found.");
+//     }
+
+//      // Decode token to check expiry (for debugging)
+//      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+//      console.log("Decoded Token:", decodedToken);
+//      console.log("Token Expiry:", new Date(decodedToken.exp * 1000));
+
+//      try {
+//       const { data } = await PutUrl("/auth/editProfile", formData, {
 //         headers: {
 //           "Content-Type": "multipart/form-data",
-//           Authorization: `Bearer ${token}`, // Fixed syntax
+//           Authorization: `Bearer ${token}`,
 //         },
 //       });
-//       persistToLocalStorage("user", JSON.stringify(data.user));
-//       // Update the user state after successful profile update
-//       if (typeof window !== "undefined") {
-//         localStorage.setItem("user", JSON.stringify(data.user)); // Update localStorage
-//       }
-
-//       return { user: data.user };
-//     } catch (error) {
-//       if (error?.response?.data?.message) {
-//         toast.error(error.response.data.message);
+    
+//       if (data && data.user) {
+//         persistToLocalStorage("user", JSON.stringify(data.user));
+//         return { user: data.user };  // Ensure user data is returned correctly
 //       } else {
-//         toast.error("An error occurred while updating the profile.");
+//         toast.error("No user data returned.");
+//         return rejectWithValue("No user data returned.");
 //       }
-//       return rejectWithValue(error?.response?.data);
+//     } catch (error) {
+//       console.error("Error:", error.response?.data);
+//       toast.error(error?.response?.data?.message || "Profile update failed");
+//       return rejectWithValue(error?.response?.data?.message);
 //     }
 //   }
 // );
 
+// features/AuthSlice.js
 export const handleEditProfile = createAsyncThunk(
   "auth/handleEditProfile",
-  async (formData, { rejectWithValue }) => {
+  async ({ formData, token }, { rejectWithValue }) => {
+    // Log token to verify it's passed correctly
+    console.log("Token passed to handleEditProfile:", token);
+
     try {
-      const response = await PutUrl("/auth/update-profile", formData); // Endpoint adjust karo
-      return response.data;
+      const decodedToken = jwtDecode(token);
+      if (!token || decodedToken.exp * 1000 < Date.now()) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token"); // Clear the expired token
+        window.location.href = "/login"; // Redirect to login page
+        return rejectWithValue("Token expired");
+      }
+
+      const { data } = await PutUrl("/auth/editProfile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      toast.success("Profile updated successfully!");
+      return data;
     } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || "Profile update failed");
+      console.error("Error during profile update:", error);
+      toast.error(error?.response?.data?.message || "Profile update failed!");
+      return rejectWithValue(error.message);
     }
   }
 );
+
 
 export const handleSendEnquiry = createAsyncThunk(
   "auth/handleSendEnquiry",
@@ -265,21 +273,46 @@ export const handleSendEnquiry = createAsyncThunk(
       persistToLocalStorage("token", data.token);
       return data;
     } catch (error) {
+       console.log("Error details:", error); 
       toast.error(error?.response?.data?.message || "Failed to send enquiry.");
       return rejectWithValue(error?.response?.data);
     }
   }
 );
 
+
+// Forgot Passcode - Send OTP
+export const handleForgotPasscode = createAsyncThunk(
+  "auth/handleForgotPasscode",
+  async ({ mobileNumber }, { rejectWithValue }) => {
+    const formData = new FormData();
+    formData.append("mobileNumber", mobileNumber);
+
+    try {
+      const { data } = await PostUrl("/auth/forgotPasscode", {
+        method: "POST",
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success(data.message || "OTP sent successfully!");
+      return data;
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to send OTP.");
+      return rejectWithValue(error?.response?.data);
+    }
+  }
+);
+// Forgot Passcode - Reset
 export const handleResetPasscode = createAsyncThunk(
   "auth/handleResetPasscode",
   async ({ mobileNumber, newPasscode }, { rejectWithValue }) => {
     try {
-      const { data } = await PutUrl("/auth/resetPasscode", {
-        data: { mobileNumber, newPasscode },
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const { data } = await PostUrl("/auth/resetPasscode", {
+        data: { mobileNumber, passcode: newPasscode },
+        headers: { "Content-Type": "application/json" },
       });
 
       toast.success("Passcode reset successfully");
@@ -291,6 +324,7 @@ export const handleResetPasscode = createAsyncThunk(
   }
 );
 
+
 export const handleChangePasscode = createAsyncThunk(
   "auth/handleChangePasscode",
   async ({ currentPasscode, newPasscode }, { rejectWithValue }) => {
@@ -298,11 +332,14 @@ export const handleChangePasscode = createAsyncThunk(
     if (!token) return rejectWithValue("Authentication token not found.");
 
     try {
-      const { data } = await PutUrl("/auth/changePasscode", {
-        data: { currentPasscode, newPasscode },
+      const formData = new FormData();
+      formData.append("currentPasscode", currentPasscode);
+      formData.append("newPasscode", newPasscode);
+
+      const { data } = await PostUrl.post("/auth/changePasscode", formData, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -316,6 +353,7 @@ export const handleChangePasscode = createAsyncThunk(
     }
   }
 );
+
 
 // Create Auth Slice
 const initialState = {
@@ -485,23 +523,18 @@ const AuthSlice = createSlice({
     builder.addCase(handleEditProfile.pending, (state) => {
       state.loading = true;
       state.error = null;
-    });
-    builder.addCase(handleEditProfile.fulfilled, (state, { payload }) => {
+    })
+    .addCase(handleEditProfile.fulfilled, (state, action) => {
       state.loading = false;
-      // state.user = payload.user; // Update user data
-      state.user = {
-        ...state.user,
-        ...action.payload.user,
-      };
-
-    });
-    builder.addCase(handleEditProfile.rejected, (state, { payload }) => {
-      console.log(payload, "profile payload");
-
-      // state.loading = false;
-      // state.error = payload;
+      if (action.payload && action.payload.user) {
+        state.user = action.payload.user;  // Make sure the payload is not undefined
+      } else {
+        state.error = "User data not available.";
+      }
+    })
+    .addCase(handleEditProfile.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload;
+      state.error = action.payload || "Profile update failed";
     });
     // Extra Reducer for Enquiry API
     builder.addCase(handleSendEnquiry.pending, (state) => {
@@ -516,6 +549,7 @@ const AuthSlice = createSlice({
       state.loading = false;
       state.error = payload;
     });
+  
   },
 });
 

@@ -327,7 +327,7 @@ const LoginForm = () => {
       <div className="hidden relative lg:block bg-[url('/static/images/signin.png')] bg-cover">
         <Link
           href="/"
-          className="absolute z-10 space-y-4 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+          className="absolute z-10 space-y-4 -translate-x-1/2 -translate-y-2/2 top-1/2 left-1/2"
         >
           <Picture
             src={"/static/images/logo1.png"}

@@ -397,10 +397,224 @@
 
 
 
-// store/slices/CartSlice.js
+// // store/slices/CartSlice.js
+// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// import { PostUrl, GetUrl, PutUrl, DeleteUrl } from "@/app/api/BaseUrl";
+// import toast from "react-hot-toast";
+// import axios from "axios";
+
+// // Initial State
+// const initialState = {
+//   cart: [],
+//   isLoading: false,
+//   error: null,
+// };
+
+// // 🔄 Async Thunks
+
+// // 1. Add to Cart
+// // export const handleAddToCart = createAsyncThunk(
+// //   "cart/handleAddToCart",
+// //   async ({ productId, quantity, token }, { rejectWithValue }) => {
+// //     try {
+// //       const response = await PostUrl("/cart", { productId, quantity }, token);
+// //       toast.success("Item added to cart");
+// //       return response.data.data;
+// //     } catch (error) {
+// //       toast.error("Failed to add item to cart");
+// //       return rejectWithValue(error.response?.data?.message || "Something went wrong");
+// //     }
+// //   }
+// // );
+// // Handle Add to Cart (Updated)
+// export const handleAddToCart = createAsyncThunk(
+//   "cart/handleAddToCart",
+//   async ({ productId, quantity, token, name, image, variant, price }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.post(
+//         "/cart",
+//         {
+//           productId,
+//           quantity,
+//           name,
+//           image,
+//           variant,
+//           price,
+//         },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
+
+//       if (response.data.success) {
+//         toast.success("Item added to cart!");
+//         return response.data.cartItem;
+//       } else {
+//         return rejectWithValue(response.data.message || "Failed to add to cart.");
+//       }
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data?.message || "Error adding to cart.");
+//     }
+//   }
+// );
+
+// // 2. Get Cart
+// // export const fetchCartItems = createAsyncThunk(
+// //   "cart/fetchCartItems",
+// //   async (token, { rejectWithValue }) => {
+// //     try {
+// //       const response = await GetUrl("/cart", token);
+// //       return response.data.data;
+// //     } catch (error) {
+// //       return rejectWithValue(error.response?.data?.message || "Failed to fetch cart");
+// //     }
+// //   }
+// // );
+// export const fetchCartItems = createAsyncThunk(
+//   "cart/fetchItems",
+//   async (token, { rejectWithValue }) => {
+//     try {
+//       const response = await GetUrl("/cart", {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       });
+
+//       console.log("Fetched cart response:", response.data);
+//       return response.data.data;
+//     } catch (error) {
+//       console.error("Fetch cart error:", error);
+//       return rejectWithValue(error.response?.data?.message || "Something went wrong");
+//     }
+//   }
+// );
+
+// // 3. Update Quantity
+// export const updateCartQuantity = createAsyncThunk(
+//   "cart/updateCartQuantity",
+//   async ({ cartItemId, quantity, token }, { rejectWithValue }) => {
+//     try {
+//       const response = await PutUrl(`/cart/${cartItemId}`, { quantity }, token);
+//       toast.success("Cart updated");
+//       return response.data.data;
+//     } catch (error) {
+//       toast.error("Failed to update quantity");
+//       return rejectWithValue(error.response?.data?.message || "Something went wrong");
+//     }
+//   }
+// );
+
+// // 4. Remove Item
+// export const removeCartItem = createAsyncThunk(
+//   "cart/removeCartItem",
+//   async ({ cartItemId, token }, { rejectWithValue }) => {
+//     try {
+//       const response = await DeleteUrl(`/cart/${cartItemId}`, token);
+//       toast.success("Item removed from cart");
+//       return cartItemId;
+//     } catch (error) {
+//       toast.error("Failed to remove item");
+//       return rejectWithValue(error.response?.data?.message || "Something went wrong");
+//     }
+//   }
+// );
+
+// // 🧠 Cart Slice
+// const cartSlice = createSlice({
+//   name: "cart",
+//   initialState,
+//   reducers: {
+//     clearCart: (state) => {
+//       state.cart = [];
+//     },
+//   },
+//   extraReducers: (builder) => {
+//     builder
+//       // // Add to cart
+//       // .addCase(handleAddToCart.pending, (state) => {
+//       //   state.isLoading = true;
+//       // })
+//       // .addCase(handleAddToCart.fulfilled, (state, action) => {
+//       //   state.isLoading = false;
+//       //   state.cart.push(action.payload);
+//       // })
+//       // .addCase(handleAddToCart.rejected, (state, action) => {
+//       //   state.isLoading = false;
+//       //   state.error = action.payload;
+//       // })
+
+//       .addCase(handleAddToCart.pending, (state) => {
+//         state.isLoading = true;
+//       })
+//       .addCase(handleAddToCart.fulfilled, (state, action) => {
+//         state.isLoading = false;
+  
+//         // Assuming response returns updated cart, we merge it
+//         const updatedCart = action.payload;
+//         state.cart = updatedCart; // Optionally, you could merge new item into existing cart
+//       })
+//       .addCase(handleAddToCart.rejected, (state, action) => {
+//         state.isLoading = false;
+//         state.error = action.payload;
+//       })
+//       // Fetch Cart
+//       .addCase(fetchCartItems.pending, (state) => {
+//         state.isLoading = true;
+//       })
+//       .addCase(fetchCartItems.fulfilled, (state, action) => {
+//         state.isLoading = false;
+//         state.cart = action.payload;
+//         console.log("Cart items updated in state:", action.payload);
+//       })
+//       .addCase(fetchCartItems.rejected, (state, action) => {
+//         state.isLoading = false;
+//         state.error = action.payload;
+//       })
+
+//       // Update Quantity
+//       .addCase(updateCartQuantity.pending, (state) => {
+//         state.isLoading = true;
+//       })
+//       .addCase(updateCartQuantity.fulfilled, (state, action) => {
+//         state.isLoading = false;
+//         const index = state.cart.findIndex((item) => item._id === action.payload._id);
+//         if (index !== -1) {
+//           state.cart[index] = action.payload;
+//         }
+//       })
+//       .addCase(updateCartQuantity.rejected, (state, action) => {
+//         state.isLoading = false;
+//         state.error = action.payload;
+//       })
+
+//       // Remove Cart Item
+//       .addCase(removeCartItem.pending, (state) => {
+//         state.isLoading = true;
+//       })
+//       .addCase(removeCartItem.fulfilled, (state, action) => {
+//         state.isLoading = false;
+//         state.cart = state.cart.filter((item) => item._id !== action.payload);
+//       })
+//       .addCase(removeCartItem.rejected, (state, action) => {
+//         state.isLoading = false;
+//         state.error = action.payload;
+//       });
+//   },
+// });
+
+// // Exports
+// export const { clearCart } = cartSlice.actions;
+// export default cartSlice.reducer;
+
+
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { PostUrl, GetUrl, PutUrl, DeleteUrl } from "@/app/api/BaseUrl";
 import toast from "react-hot-toast";
+import axios from 'axios';
+
 
 // Initial State
 const initialState = {
@@ -414,56 +628,99 @@ const initialState = {
 // 1. Add to Cart
 export const handleAddToCart = createAsyncThunk(
   "cart/handleAddToCart",
-  async ({ productId, quantity, token }, { rejectWithValue }) => {
+  async ({ productId, variants, token }, { rejectWithValue }) => {
     try {
-      const response = await PostUrl("/cart", { productId, quantity }, token);
-      toast.success("Item added to cart");
-      return response.data.data;
-    } catch (error) {git in
-      toast.error("Failed to add item to cart");
-      return rejectWithValue(error.response?.data?.message || "Something went wrong");
+      console.log("🛒 Raw payload received in thunk:", { productId, variants, token });
+
+      const formData = new FormData();
+      formData.append("productId", productId);
+      formData.append("variants", JSON.stringify(variants));
+
+      const response = await axios.post(
+        "https://steel-junction.onrender.com/api/cart",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("📦 API Response in thunk:", response?.data);
+
+      if (response.data?.success) {
+        toast.success("Item added to cart");
+        return response.data?.data || []; // ✅ fallback
+      } else {
+        toast.error("Something went wrong.");
+        return rejectWithValue(response.data?.message || "Add to cart failed");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
-// 2. Get Cart
 export const fetchCartItems = createAsyncThunk(
   "cart/fetchCartItems",
-  async (token, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await GetUrl("/api/cart", token);
-      return response.data.data;
+      const token = localStorage.getItem("token");
+      const response = await GetUrl.get("/cart", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data.data; // assuming backend returns { data: [...] }
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch cart");
+      toast.error("Failed to fetch cart.");
+      return rejectWithValue(error.response?.data?.message || "Something went wrong");
     }
   }
 );
-
-// 3. Update Quantity
+// 3. Update Cart Quantity
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ cartItemId, quantity, token }, { rejectWithValue }) => {
+  async ({ cartItemId, quantity }, { rejectWithValue }) => {
     try {
-      const response = await PutUrl(`/api/cart/${cartItemId}`, { quantity }, token);
+      const response = await PutUrl.put(
+        `/cart/${cartItemId}`,
+        { quantity },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
       toast.success("Cart updated");
-      return response.data.data;
+      return response.data.data; // updated cart item
     } catch (error) {
-      toast.error("Failed to update quantity");
+      toast.error("Failed to update quantity.");
       return rejectWithValue(error.response?.data?.message || "Something went wrong");
     }
   }
 );
 
-// 4. Remove Item
+// 4. Remove Cart Item
 export const removeCartItem = createAsyncThunk(
   "cart/removeCartItem",
-  async ({ cartItemId, token }, { rejectWithValue }) => {
+  async ({ cartItemId }, { rejectWithValue }) => {
     try {
-      const response = await DeleteUrl(`/api/cart/${cartItemId}`, token);
+      await DeleteUrl.delete(`/cart/${cartItemId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       toast.success("Item removed from cart");
-      return cartItemId;
+      return cartItemId; // return ID to filter from state
     } catch (error) {
-      toast.error("Failed to remove item");
+      toast.error("Failed to remove item.");
       return rejectWithValue(error.response?.data?.message || "Something went wrong");
     }
   }
@@ -480,13 +737,60 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add to cart
+      // Add to Cart
       .addCase(handleAddToCart.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(handleAddToCart.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.cart.push(action.payload);
+        console.log("🛒 Add to Cart Reducer Payload:", action.payload);
+      
+        // Check if payload is an array (multiple products)
+        if (Array.isArray(action.payload)) {
+          action.payload.forEach((newProduct) => {
+            // Find index of the product in the cart
+            const existingIndex = state.cart.findIndex(
+              (item) => item.productId === newProduct.productId
+            );
+      
+            if (existingIndex !== -1) {
+              // If product exists, update its variants (append new ones)
+              state.cart[existingIndex] = {
+                ...state.cart[existingIndex],
+                variants: [
+                  ...state.cart[existingIndex].variants,
+                  ...newProduct.variants, // Append new variants
+                ],
+              };
+            } else {
+              // If product doesn't exist, add it
+              state.cart.push(newProduct);
+            }
+          });
+        } else if (action.payload && action.payload.productId) {
+          // Check if it's a single product (non-array)
+          const newProduct = action.payload;
+      
+          const existingIndex = state.cart.findIndex(
+            (item) => item.productId === newProduct.productId
+          );
+      
+          if (existingIndex !== -1) {
+            // If product exists, update its variants (append new ones)
+            state.cart[existingIndex] = {
+              ...state.cart[existingIndex],
+              variants: [
+                ...state.cart[existingIndex].variants,
+                ...newProduct.variants, // Append new variants
+              ],
+            };
+          } else {
+            // If product doesn't exist, add it
+            state.cart.push(newProduct);
+          }
+        } else {
+          console.error("❌ Invalid payload:", action.payload);
+        }
       })
       .addCase(handleAddToCart.rejected, (state, action) => {
         state.isLoading = false;
@@ -499,11 +803,11 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.cart = action.payload;
+        state.cart = action.payload || []; // ✅ FIXED HERE
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        state.error = action.payload || "Something went wrong";
       })
 
       // Update Quantity
@@ -522,7 +826,7 @@ const cartSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Remove Cart Item
+      // Remove Item
       .addCase(removeCartItem.pending, (state) => {
         state.isLoading = true;
       })

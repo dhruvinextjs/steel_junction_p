@@ -1,680 +1,280 @@
-// "use client";
-
-// import React, { useRef, useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { Button } from "@/components/ui/button";
-// import Picture from "@/components/ui/picture";
-// import toast from "react-hot-toast";
-// import { useRouter } from "next/navigation";
-
-// const generateOtp = () => Math.floor(1000 + Math.random() * 9000).toString();
-
-// const ForgetPasscode = () => {
-//   const router = useRouter();
-
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors },
-//   } = useForm();
-
-//   const [loading, setLoading] = useState(false);
-//   const [step, setStep] = useState(1);
-//   const [phone, setPhone] = useState("");
-//   const [otp, setOtp] = useState("");
-//   const [otpValues, setOtpValues] = useState(["", "", "", ""]);
-//   const [newPassValues, setNewPassValues] = useState(["", "", "", ""]);
-//   const [confirmPassValues, setConfirmPassValues] = useState(["", "", "", ""]);
-
-//   const inputRefs = useRef([]);
-//   const passRefs = useRef([]);
-//   const confirmRefs = useRef([]);
-
-//   const handleSendOtp = async (data) => {
-//     setLoading(true);
-//     try {
-//       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//       if (data.phone === "0000000000") {
-//         toast.error("Please provide a registered mobile number");
-//       } else {
-//         const newOtp = generateOtp();
-//         setOtp(newOtp);
-//         setPhone(data.phone);
-//         setStep(2);
-//         toast.success("OTP sent successfully to " + data.phone);
-//       }
-//     } catch (error) {
-//       toast.error("Failed to send OTP. Please try again.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleOtpChange = (index, value) => {
-//     if (!/^[0-9]?$/.test(value)) return;
-
-//     const newOtpValues = [...otpValues];
-//     newOtpValues[index] = value;
-//     setOtpValues(newOtpValues);
-
-//     if (value && index < 3) {
-//       inputRefs.current[index + 1]?.focus();
-//     }
-//   };
-
-//   const handleKeyDown = (index, e) => {
-//     if (e.key === "Backspace" && !otpValues[index] && index > 0) {
-//       inputRefs.current[index - 1]?.focus();
-//     }
-//   };
-
-//   const handleVerifyOtp = () => {
-//     const enteredOtp = otpValues.join("");
-//     if (enteredOtp === otp) {
-//       toast.success("OTP verified successfully!");
-//       setStep(3);
-//     } else {
-//       toast.error("Invalid OTP. Please try again.");
-//     }
-//   };
-
-//   const handleResendOtp = () => {
-//     const newOtp = generateOtp();
-//     setOtp(newOtp);
-//     setOtpValues(["", "", "", ""]);
-//     toast.success("OTP resent successfully");
-//     inputRefs.current[0]?.focus();
-//   };
-
-//   const handlePassChange = (index, value) => {
-//     if (!/^[0-9]?$/.test(value)) return;
-
-//     const newPass = [...newPassValues];
-//     newPass[index] = value;
-//     setNewPassValues(newPass);
-
-//     if (value && index < 3) {
-//       passRefs.current[index + 1]?.focus();
-//     }
-//   };
-
-//   const handlePassKeyDown = (index, e) => {
-//     if (e.key === "Backspace" && !newPassValues[index] && index > 0) {
-//       passRefs.current[index - 1]?.focus();
-//     }
-//   };
-
-//   const handleSubmitNewPass = () => {
-//     const newPassword = newPassValues.join("");
-//     if (newPassword.length === 4) {
-//       setStep(4);
-//     } else {
-//       toast.error("Please enter a 4-digit passcode");
-//     }
-//   };
-
-//   const handleConfirmPassChange = (index, value) => {
-//     if (!/^[0-9]?$/.test(value)) return;
-
-//     const newConfirm = [...confirmPassValues];
-//     newConfirm[index] = value;
-//     setConfirmPassValues(newConfirm);
-
-//     if (value && index < 3) {
-//       confirmRefs.current[index + 1]?.focus();
-//     }
-//   };
-
-//   const handleConfirmKeyDown = (index, e) => {
-//     if (e.key === "Backspace" && !confirmPassValues[index] && index > 0) {
-//       confirmRefs.current[index - 1]?.focus();
-//     }
-//   };
-
-//   const handleSubmitConfirmPass = () => {
-//     const confirmPass = confirmPassValues.join("");
-//     const newPass = newPassValues.join("");
-
-//     if (confirmPass.length !== 4) {
-//       toast.error("Please enter a 4-digit confirm passcode");
-//       return;
-//     }
-
-//     if (confirmPass !== newPass) {
-//       toast.error("Passcodes do not match");
-//       return;
-//     }
-
-//     toast.success("Passcode changed successfully!");
-//     router.push("/login");
-//   };
-
-//   return (
-//     <div className="min-h-[80vh] flex items-center justify-center px-4 py-8 bg-gray-100">
-//       <div className="relative w-full max-w-md p-8 space-y-6 bg-white shadow-lg rounded-2xl">
-//         {/* Back Arrow (visible from step 2 onward) */}
-//         {step > 1 && (
-//           <button
-//             onClick={() => setStep(step - 1)}
-//             className="absolute text-xl font-bold text-gray-700 top-4 left-4 hover:text-black"
-//             aria-label="Go back"
-//           >
-//            <i className="fa-solid fa-arrow-left"></i>
-//           </button>
-//         )}
-
-//         <h2 className="text-2xl font-bold text-start text-[#25324B]">
-//           {step === 1
-//             ? "Forget your Passcode"
-//             : step === 2
-//             ? "Verify your mobile"
-//             : step === 3
-//             ? " "
-//             : " "}
-//         </h2>
-
-//         {/* Step 1: Enter Mobile Number */}
-//         {step === 1 && (
-//           <>
-//             <p className="text-sm text-gray-600 text-start">
-//               Enter your mobile number below and we will send you a verification
-//               code
-//             </p>
-
-//             <form onSubmit={handleSubmit(handleSendOtp)} className="space-y-4">
-//               <div>
-//                 <label
-//                   htmlFor="phone"
-//                   className="block text-sm font-medium text-black"
-//                 >
-//                   Mobile Number
-//                 </label>
-//                 <input
-//                   type="tel"
-//                   id="phone"
-//                   maxLength={10}
-//                   {...register("phone", {
-//                     required: "Mobile number is required",
-//                     minLength: { value: 10, message: "Enter valid number" },
-//                   })}
-//                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#636060]"
-//                   placeholder="Type here..."
-//                 />
-//                 {errors.phone && (
-//                   <p className="mt-1 text-sm text-red-500">
-//                     {errors.phone.message}
-//                   </p>
-//                 )}
-//               </div>
-
-//               <Button
-//                 type="submit"
-//                 className="w-full bg-[#000000] hover:bg-[#3d3d3d] text-white py-2 rounded-lg text-sm font-medium"
-//                 disabled={loading}
-//               >
-//                 {loading ? "Sending..." : "Send"}
-//               </Button>
-//             </form>
-//           </>
-//         )}
-
-//         {/* Step 2: Enter OTP */}
-//         {step === 2 && (
-//           <>
-//             <div className="text-center">
-//               <p className="mb-2 text-sm text-gray-600 text-start">
-//                 Please type 4-digit code that we have sent to your mobile{" "}
-//                 <strong className="text-green-600">{phone}</strong>
-//               </p>
-//               <p className="text-lg font-medium text-[#000000]">OTP: {otp}</p>
-//             </div>
-
-//             <form
-//               onSubmit={(e) => {
-//                 e.preventDefault();
-//                 handleVerifyOtp();
-//               }}
-//               className="mt-4 space-y-4"
-//             >
-//               <div className="flex justify-between gap-2">
-//                 {otpValues.map((value, index) => (
-//                   <input
-//                     key={index}
-//                     ref={(el) => (inputRefs.current[index] = el)}
-//                     type="text"
-//                     maxLength={1}
-//                     value={value}
-//                     onChange={(e) => handleOtpChange(index, e.target.value)}
-//                     onKeyDown={(e) => handleKeyDown(index, e)}
-//                     className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#636060]"
-//                   />
-//                 ))}
-//               </div>
-
-//               <Button
-//                 type="submit"
-//                 className="w-full bg-[#000000] text-white py-2 rounded-lg text-sm font-medium"
-//               >
-//                 Verify
-//               </Button>
-
-//               <p
-//                 onClick={handleResendOtp}
-//                 className="text-center text-sm text-[#000000] font-medium cursor-pointer hover:underline"
-//               >
-//                 Resend OTP
-//               </p>
-//             </form>
-//           </>
-//         )}
-
-//         {/* Step 3: New Passcode */}
-//         {step === 3 && (
-//           <>
-//             <Picture
-//               src={"/static/images/passcodeimage.png"}
-//               alt="logo"
-//               width={100}
-//               height={100}
-//               className="mx-auto"
-//             />
-//             <div className="mt-2 text-lg font-medium text-center text-black">
-//               New Passcode
-//             </div>
-//             <form
-//               onSubmit={(e) => {
-//                 e.preventDefault();
-//                 handleSubmitNewPass();
-//               }}
-//               className="mt-4 space-y-4"
-//             >
-//               <div className="flex justify-between gap-2">
-//                 {newPassValues.map((value, index) => (
-//                   <input
-//                     key={index}
-//                     ref={(el) => (passRefs.current[index] = el)}
-//                     type="password"
-//                     maxLength={1}
-//                     value={value}
-//                     onChange={(e) => handlePassChange(index, e.target.value)}
-//                     onKeyDown={(e) => handlePassKeyDown(index, e)}
-//                     className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC342A]"
-//                   />
-//                 ))}
-//               </div>
-
-//               <Button
-//                 type="submit"
-//                 className="w-full bg-[#000000] text-white py-2 rounded-lg text-sm font-medium"
-//               >
-//                 Continue
-//               </Button>
-//             </form>
-//           </>
-//         )}
-
-//         {/* Step 4: Confirm Passcode */}
-//         {step === 4 && (
-//           <>
-//             <Picture
-//               src={"/static/images/passcodeimage.png"}
-//               alt="logo"
-//               width={100}
-//               height={100}
-//               className="mx-auto"
-//             />
-//             <div className="mt-2 text-lg font-medium text-center text-black">
-//               Confirm Passcode
-//             </div>
-//             <form
-//               onSubmit={(e) => {
-//                 e.preventDefault();
-//                 handleSubmitConfirmPass();
-//               }}
-//               className="mt-4 space-y-4"
-//             >
-//               <div className="flex justify-between gap-2">
-//                 {confirmPassValues.map((value, index) => (
-//                   <input
-//                     key={index}
-//                     ref={(el) => (confirmRefs.current[index] = el)}
-//                     type="password"
-//                     maxLength={1}
-//                     value={value}
-//                     onChange={(e) =>
-//                       handleConfirmPassChange(index, e.target.value)
-//                     }
-//                     onKeyDown={(e) => handleConfirmKeyDown(index, e)}
-//                     className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC342A]"
-//                   />
-//                 ))}
-//               </div>
-
-//               <Button
-//                 type="submit"
-//                 className="w-full bg-[#000000] text-white py-2 rounded-lg text-sm font-medium"
-//               >
-//                 Continue
-//               </Button>
-//             </form>
-//           </>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ForgetPasscode;
-
 "use client";
 
-import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
 import { Button } from "@/components/ui/button";
 import Picture from "@/components/ui/picture";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useDispatch } from "react-redux";
-import { handleResetPasscode } from "@/redux/AuthSlice";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import {
+  handleForgotPasscode,
+  handleVerifyOtp,
+  handleResetPasscode,
+} from "@/redux/AuthSlice";
+import Image from "next/image";
 
-const generateOtp = () => Math.floor(1000 + Math.random() * 9000).toString();
+// OTP Input Component
+const OTPInput = ({ name, control, errors }) => (
+  <Controller
+    name={name}
+    control={control}
+    rules={{
+      required: `${name} is required`,
+      minLength: { value: 4, message: `${name} must be 4 digits` },
+    }}
+    render={({ field }) => (
+      <InputOTP
+        maxLength={4}
+        value={field.value}
+        onChange={(value) => field.onChange(value)}
+      >
+        <InputOTPGroup className="gap-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <InputOTPSlot key={index} index={index} />
+          ))}
+        </InputOTPGroup>
+      </InputOTP>
+    )}
+  />
+);
 
-const ForgetPasscode = () => {
+const ForgotPasscodePage = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
+  const { loading } = useSelector((state) => state.auth);
+  const [step, setStep] = useState(1);
+  const [visibleOtp, setVisibleOtp] = useState("");
+  const [otpTimer, setOtpTimer] = useState(0); // Timer for OTP resend
 
   const {
-    register,
+    control,
     handleSubmit,
+    register,
+    watch,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      phone: "",
+      otp: "",
+      newPasscode: "",
+      confirmPasscode: "",
+    },
+  });
 
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpValues, setOtpValues] = useState(["", "", "", ""]);
-  const [newPassValues, setNewPassValues] = useState(["", "", "", ""]);
-  const [confirmPassValues, setConfirmPassValues] = useState(["", "", "", ""]);
-  const dispatch = useDispatch()
-
-  const inputRefs = useRef([]);
-  const passRefs = useRef([]);
-  const confirmRefs = useRef([]);
-
-  const handleSendOtp = async (data) => {
-    setLoading(true);
+  const onSubmit = async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      switch (step) {
+        case 1:
+          if (data.phone.length !== 10) {
+            toast.error("Enter valid mobile number");
+            return;
+          }
+          const otpResponse = await dispatch(
+            handleForgotPasscode({ mobileNumber: data.phone })
+          ).unwrap();
 
-      if (data.phone === "0000000000") {
-        toast.error("Please provide a registered mobile number");
-      } else {
-        const newOtp = generateOtp();
-        setOtp(newOtp);
-        setPhone(data.phone);
-        setStep(2);
-        toast.success("OTP sent successfully to " + data.phone);
+          if (otpResponse.otp) setVisibleOtp(otpResponse.otp);
+          toast.success("OTP sent to your mobile");
+          setStep(2);
+          break;
+
+        case 2:
+          if (data.otp.length !== 4) {
+            toast.error("OTP must be 4 digits");
+            return;
+          }
+          await dispatch(
+            handleVerifyOtp({ mobileNumber: data.phone, otp: data.otp })
+          ).unwrap();
+          toast.success("OTP verified successfully");
+          setStep(3);
+          break;
+
+        case 3:
+          if (data.newPasscode.length !== 4) {
+            toast.error("Passcode must be 4 digits");
+            return;
+          }
+          setStep(4);
+          break;
+
+        case 4:
+          if (data.newPasscode !== data.confirmPasscode) {
+            toast.error("Passcodes do not match");
+            return;
+          }
+
+          await dispatch(
+            handleResetPasscode({
+              mobileNumber: data.phone,
+              newPasscode: data.newPasscode,
+            })
+          ).unwrap();
+          toast.success("Passcode reset successfully");
+          setStep(5);
+          setTimeout(() => {
+            router.push("/login");
+          }, 6000);
+          break;
+
+        default:
+          break;
       }
     } catch (error) {
-      toast.error("Failed to send OTP. Please try again.");
-    } finally {
-      setLoading(false);
+      toast.error(error?.message || "Something went wrong");
     }
   };
 
-  const handleOtpChange = (index, value) => {
-    if (!/^[0-9]?$/.test(value)) return;
-    const newOtpValues = [...otpValues];
-    newOtpValues[index] = value;
-    setOtpValues(newOtpValues);
-    if (value && index < 3) inputRefs.current[index + 1]?.focus();
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otpValues[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleVerifyOtp = () => {
-    const enteredOtp = otpValues.join("");
-    if (enteredOtp === otp) {
-      toast.success("OTP verified successfully!");
-      setStep(3);
-    } else {
-      toast.error("Invalid OTP. Please try again.");
-    }
-  };
-
-  const handleResendOtp = () => {
-    const newOtp = generateOtp();
-    setOtp(newOtp);
-    setOtpValues(["", "", "", ""]);
-    toast.success("OTP resent successfully");
-    inputRefs.current[0]?.focus();
-  };
-
-  const handlePassChange = (index, value) => {
-    if (!/^[0-9]?$/.test(value)) return;
-    const newPass = [...newPassValues];
-    newPass[index] = value;
-    setNewPassValues(newPass);
-    if (value && index < 3) passRefs.current[index + 1]?.focus();
-  };
-
-  const handlePassKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !newPassValues[index] && index > 0) {
-      passRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleSubmitNewPass = () => {
-    const newPassword = newPassValues.join("");
-    if (newPassword.length === 4) {
-      setStep(4);
-    } else {
-      toast.error("Please enter a 4-digit passcode");
-    }
-  };
-
-  const handleConfirmPassChange = (index, value) => {
-    if (!/^[0-9]?$/.test(value)) return;
-    const newConfirm = [...confirmPassValues];
-    newConfirm[index] = value;
-    setConfirmPassValues(newConfirm);
-    if (value && index < 3) confirmRefs.current[index + 1]?.focus();
-  };
-
-  const handleConfirmKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !confirmPassValues[index] && index > 0) {
-      confirmRefs.current[index - 1]?.focus();
-    }
-  };
-
-  // const handleSubmitConfirmPass = () => {
-  //   const confirmPass = confirmPassValues.join("");
-  //   const newPass = newPassValues.join("");
-
-  //   if (confirmPass.length !== 4) {
-  //     toast.error("Please enter a 4-digit confirm passcode");
-  //     return;
-  //   }
-
-  //   if (confirmPass !== newPass) {
-  //     toast.error("Passcodes do not match");
-  //     return;
-  //   }
-
-  //   toast.success("Passcode changed successfully!");
-  //   router.push("/login");
-  // };
-
-  const handleSubmitConfirmPass = async () => {
-    const confirmPass = confirmPassValues.join("");
-    const newPass = newPassValues.join("");
-  
-    if (confirmPass.length !== 4) {
-      toast.error("Please enter a 4-digit confirm passcode");
-      return;
-    }
-  
-    if (confirmPass !== newPass) {
-      toast.error("Passcodes do not match");
-      return;
-    }
-  
+  const handleResendOtp = async (phone) => {
+    // Call the API to resend the OTP
     try {
-      const result = await dispatch(
-        handleResetPasscode({
-          mobileNumber: phone,
-          newPasscode: confirmPass,
-        })
-      );
-  
-      if (handleResetPasscode.fulfilled.match(result)) {
-        toast.success("Passcode changed successfully!");
-        router.push("/login");
+      const otpResponse = await dispatch(
+        handleForgotPasscode({ mobileNumber: phone })
+      ).unwrap();
+      if (otpResponse.otp) {
+        setVisibleOtp(otpResponse.otp);
+        toast.success("OTP resent successfully");
+        setOtpTimer(30); // Set timer for OTP resend cooldown
+        const timer = setInterval(() => {
+          setOtpTimer((prev) => {
+            if (prev === 0) clearInterval(timer);
+            return prev - 1;
+          });
+        }, 1000);
       }
     } catch (error) {
-      console.error("Reset error", error);
+      toast.error("Error resending OTP");
     }
   };
-  
 
   return (
-    <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
-      {/* Left Image Section */}
-      <div className="hidden md:block relative w-full h-full min-h-screen bg-[url('/static/images/signin.png')] bg-cover bg-center">
-
-        <Link
-          href="/"
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center"
-        >
+    <div className="grid w-screen lg:grid-cols-2">
+      <div className="hidden relative lg:block bg-[url('/static/images/signin.png')] bg-cover">
+        <div className="absolute z-10 -translate-x-1/2 top-1/2 left-1/2 -translate-y-2/2">
           <Picture
             src={"/static/images/logo1.png"}
             alt="logo"
-            className="mx-auto w-[150px] h-auto"
+            className="mx-auto"
             width={150}
             height={150}
           />
-        </Link>
+        </div>
       </div>
 
-      {/* Right Form Section */}
-      <div className="flex items-center justify-center px-4 py-8 bg-gray-100">
-        <div className="relative w-full max-w-md p-8 space-y-6 bg-white shadow-lg rounded-2xl">
+      <div className="flex items-center justify-center min-h-screen bg-[#FAFAFA] p-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full max-w-sm p-4 space-y-4 bg-white rounded-lg shadow-md md:p-6"
+        >
+          {/* Back Button for steps > 1 */}
           {step > 1 && (
             <button
+              type="button"
               onClick={() => setStep(step - 1)}
-              className="absolute text-xl font-bold text-gray-700 top-4 left-4 hover:text-black"
-              aria-label="Go back"
+              className="flex items-center gap-2 mb-2 text-sm text-gray-600 hover:text-black"
             >
+              {/* <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg> */}
               <i className="fa-solid fa-arrow-left"></i>
             </button>
           )}
 
-          <h2 className="text-2xl font-bold text-start text-[#25324B]">
-            {step === 1
-              ? "Forget your Passcode"
-              : step === 2
-              ? "Verify your mobile"
-              : step === 3
-              ? " "
-              : " "}
-          </h2>
-
-          {/* Step 1: Mobile Number */}
+          {/* Step 1: Enter Phone */}
           {step === 1 && (
             <>
-              <p className="text-sm text-gray-600 text-start">
+              <h2 className="text-lg font-semibold">Forgot Passcode</h2>
+              <p className="text-sm text-gray-400">
                 Enter your mobile number below and we will send you a
                 verification code
               </p>
-              <form
-                onSubmit={handleSubmit(handleSendOtp)}
-                className="space-y-4"
-              >
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-black"
-                  >
-                    Mobile Number
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    maxLength={10}
-                    {...register("phone", {
-                      required: "Mobile number is required",
-                      minLength: { value: 10, message: "Enter valid number" },
-                    })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#636060]"
-                    placeholder="Type here..."
-                  />
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.phone.message}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#000000] hover:bg-[#3d3d3d] text-white py-2 rounded-lg text-sm font-medium"
-                  disabled={loading}
-                >
-                  {loading ? "Sending..." : "Send"}
-                </Button>
-              </form>
+              <div className="space-y-2">
+                <label className="label_text">Mobile Number</label>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  placeholder="Type here..."
+                  {...register("phone", {
+                    required: "Mobile number is required",
+                    minLength: {
+                      value: 10,
+                      message: "Mobile number must be 10 digits",
+                    },
+                    maxLength: {
+                      value: 10,
+                      message: "Mobile number must be 10 digits",
+                    },
+                  })}
+                  className="input_field"
+                />
+                {errors.phone && (
+                  <p className="text-sm text-red-500">{errors.phone.message}</p>
+                )}
+              </div>
+              <Button type="submit" className="w-full text-white">
+                {loading ? "Sending OTP..." : "Send"}
+              </Button>
             </>
           )}
 
-          {/* Step 2: OTP */}
+          {/* Step 2: Verify OTP */}
           {step === 2 && (
             <>
-              <div className="text-center">
-                <p className="mb-2 text-sm text-gray-600 text-start">
-                  Please type 4-digit code that we have sent to your mobile{" "}
-                  <strong className="text-green-600">{phone}</strong>
+              <h2 className="text-lg font-semibold text-start">
+                Verify Your Mobile
+              </h2>
+              <p className="text-sm text-gray-400 w-50">
+                Please type 4-digit code that we have sent to your mobile.
+              </p>
+              <span className="text-sm text-green-600">{watch("phone")}</span>
+              {visibleOtp && (
+                <p className="text-center text-primary_color">
+                  OTP: {visibleOtp}
                 </p>
-                <p className="text-lg font-medium text-[#000000]">OTP: {otp}</p>
+              )}
+              <div className="flex justify-center">
+                <OTPInput name="otp" control={control} errors={errors} />
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleVerifyOtp();
-                }}
-                className="mt-4 space-y-4"
-              >
-                <div className="flex justify-between gap-2">
-                  {otpValues.map((value, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => (inputRefs.current[index] = el)}
-                      type="text"
-                      maxLength={1}
-                      value={value}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#636060]"
-                    />
-                  ))}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#000000] text-white py-2 rounded-lg text-sm font-medium"
-                >
-                  Verify
-                </Button>
-                <p
-                  onClick={handleResendOtp}
-                  className="text-center text-sm text-[#000000] font-medium cursor-pointer hover:underline"
-                >
-                  Resend OTP
+              {errors.otp && (
+                <p className="text-sm text-center text-red-500">
+                  {errors.otp.message}
                 </p>
-              </form>
+              )}
+              <Button type="submit" className="w-full text-white">
+                {loading ? "Verifying..." : "Verify"}
+              </Button>
+              <div className="flex justify-center mt-2">
+                {otpTimer === 0 ? (
+                  <span
+                    className="text-sm text-gray-500 cursor-pointer"
+                    onClick={() => handleResendOtp(watch("phone"))}
+                  >
+                    Resend OTP
+                  </span>
+                ) : (
+                  <span className="text-sm text-gray-500">
+                    Resend OTP in {otpTimer}s
+                  </span>
+                )}
+              </div>
             </>
           )}
 
@@ -688,37 +288,19 @@ const ForgetPasscode = () => {
                 height={100}
                 className="mx-auto"
               />
-              <div className="mt-2 text-lg font-medium text-center text-black">
+              <h2 className="font-semibold text-center text-md">
                 New Passcode
+              </h2>
+              <div className="flex justify-center">
+                <OTPInput
+                  name="newPasscode"
+                  control={control}
+                  errors={errors}
+                />
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmitNewPass();
-                }}
-                className="mt-4 space-y-4"
-              >
-                <div className="flex justify-between gap-2">
-                  {newPassValues.map((value, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => (passRefs.current[index] = el)}
-                      type="password"
-                      maxLength={1}
-                      value={value}
-                      onChange={(e) => handlePassChange(index, e.target.value)}
-                      onKeyDown={(e) => handlePassKeyDown(index, e)}
-                      className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC342A]"
-                    />
-                  ))}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#000000] text-white py-2 rounded-lg text-sm font-medium"
-                >
-                  Continue
-                </Button>
-              </form>
+              <Button type="submit" className="w-full text-white">
+                {loading ? "Processing..." : "Continue"}
+              </Button>
             </>
           )}
 
@@ -732,45 +314,65 @@ const ForgetPasscode = () => {
                 height={100}
                 className="mx-auto"
               />
-              <div className="mt-2 text-lg font-medium text-center text-black">
+              <h2 className="font-semibold text-center text-md">
                 Confirm Passcode
+              </h2>
+              <div className="flex justify-center">
+                <OTPInput
+                  name="confirmPasscode"
+                  control={control}
+                  errors={errors}
+                />
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmitConfirmPass();
-                }}
-                className="mt-4 space-y-4"
-              >
-                <div className="flex justify-between gap-2">
-                  {confirmPassValues.map((value, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => (confirmRefs.current[index] = el)}
-                      type="password"
-                      maxLength={1}
-                      value={value}
-                      onChange={(e) =>
-                        handleConfirmPassChange(index, e.target.value)
-                      }
-                      onKeyDown={(e) => handleConfirmKeyDown(index, e)}
-                      className="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC342A]"
-                    />
-                  ))}
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-[#000000] text-white py-2 rounded-lg text-sm font-medium"
-                >
-                  Continue
-                </Button>
-              </form>
+              <Button type="submit" className="w-full text-white">
+                {loading ? "Processing..." : "Reset Passcode"}
+              </Button>
             </>
           )}
-        </div>
+          {step === 5 && (
+            <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-white">
+              <div className="w-full max-w-md space-y-6 text-center">
+                {/* Success Tick Image */}
+                <Image
+                  src="/static/images/success.png" // Save this image in public/images folder
+                  alt="Success"
+                  width={120}
+                  height={120}
+                  className="mx-auto"
+                />
+
+                {/* Title */}
+                <h2 className="text-3xl font-semibold text-[#323232]">
+                  You're all set up
+                </h2>
+
+                {/* Description */}
+                <p className="text-[#7D7D7D] text-base font-medium">
+                  You have successfully signed up. You can now log in and get
+                  started with your journey.
+                </p>
+
+                {/* Let’s Go Button */}
+                <button
+                  onClick={() => router.push("/login")}
+                  className="w-full px-6 py-3 text-base font-semibold text-white transition rounded-lg bg-primary"
+                >
+                  Let’s Go
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Done */}
+          {/* {step === 5 && (
+            <p className="font-medium text-center text-black">
+              Passcode Updated. Try Login in
+            </p>
+          )} */}
+        </form>
       </div>
     </div>
   );
 };
 
-export default ForgetPasscode;
+export default ForgotPasscodePage;

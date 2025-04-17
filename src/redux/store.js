@@ -7,6 +7,7 @@ import GetProductSlice from "./ProductSlice";
 import GetFavoriteSlice from "./FavouriteSlice";
 import GetRetailerProductSlice from "./RetailerProductSlice";
 import GetCartSlice from "./CartSlice";
+import GstDetailSlice from "./GstDetailSlice"
 // const rootPersistConfig = {
 //   key: "root",
 //   storage,
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   getfavorites: GetFavoriteSlice,
   getRetailerProduct: GetRetailerProductSlice,
   getCart: GetCartSlice,
+  gstDetail:GstDetailSlice
 });
 const persistConfig = {
   key: "root",
