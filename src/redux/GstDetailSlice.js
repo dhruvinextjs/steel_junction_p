@@ -33,6 +33,28 @@ export const handleAddGstDetail = createAsyncThunk(
     }
   }
 );
+
+//get 
+export const getGstDetails = createAsyncThunk(
+  "gst/getGstDetails",
+  async (_, { rejectWithValue }) => {
+    const token = getToken();
+    if (!token) return rejectWithValue("Authentication token not found.");
+    
+    try {
+      const { data } = await GetUrl.get("/auth/getGstDetails", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return data; // Assuming the response contains the GST details
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to fetch GST details.");
+      return rejectWithValue(error?.response?.data);
+    }
+  }
+);
+
  
 // Update GST Detail
 export const handleUpdateGstDetail = createAsyncThunk(
@@ -105,6 +127,20 @@ const GstDetailSlice = createSlice({
       state.loading = false;
       state.error = payload;
     });
+
+    builder.addCase(getGstDetails.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getGstDetails.fulfilled, (state, { payload }) => {
+      state.loading = false;
+      state.gstDetails = payload.gstDetails; // Assuming this contains your GST data
+    });
+    builder.addCase(getGstDetails.rejected, (state, { payload }) => {
+      state.loading = false;
+      state.error = payload;
+    });
+    
   },
 });
  
