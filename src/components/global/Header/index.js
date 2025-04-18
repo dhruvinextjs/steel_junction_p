@@ -66,6 +66,7 @@ const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { searchResults, loading } = useSelector((state) => state.getProduct);
   const [pdfUrl, setPdfUrl] = useState(null);
+  
 
   const { user } = useSelector((state) => state.auth);
 
@@ -134,7 +135,7 @@ const Header = () => {
       router.push("/");
       toast.remove();
     }, 1000);
-  }
+  } 
 
   useEffect(() => {
     // Fetch product PDF URL from the API

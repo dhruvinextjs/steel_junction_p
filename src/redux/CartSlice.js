@@ -683,28 +683,82 @@ export const fetchCartItems = createAsyncThunk(
   }
 );
 // 3. Update Cart Quantity
+
+// export const updateCartQuantity = createAsyncThunk(
+//   "cart/updateCartQuantity",
+//   async ({ productId, variants }, { rejectWithValue }) => {
+//     try {
+//       let token = localStorage.getItem("token")?.replace(/^"(.*)"$/, '$1'); // Sanitize token
+
+//       if (!token) {
+//         toast.error("No token found, please login again.");
+//         return rejectWithValue({ message: "No token found" });
+//       }
+
+//       const formData = new FormData();
+//       formData.append("productId", productId);
+//       formData.append("variants", JSON.stringify(variants));
+
+//       const response = await PostUrl.post("/cart", formData, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "multipart/form-data",
+//         },
+//       });
+
+//       console.log('Response from server:', response);
+
+//       // Handle both 200 and 201 as success
+//       if (response.status === 200 || response.status === 201) {
+//         // Log the response data for debugging
+//         console.log('Cart Update Response:', response.data);
+//         return response.data;
+//       } else {
+//         console.error("Unexpected response status:", response.status);
+//         toast.error("Something went wrong, please try again.");
+//         return rejectWithValue({ message: "Unexpected response from server" });
+//       }
+//     } catch (error) {
+//       console.error('Error during cart update:', error);
+//       const errData = error.response?.data || { message: "Something went wrong" };
+//       toast.error(errData.message);
+//       return rejectWithValue(errData);
+//     }
+//   }
+// );
 export const updateCartQuantity = createAsyncThunk(
-  "cart/updateCartQuantity",
-  async ({ cartItemId, quantity }, { rejectWithValue }) => {
+  'cart/updateCartQuantity',
+  async ({ productId, variants }, { rejectWithValue }) => {
+    const formData = new FormData();
+    formData.append('productId', productId);
+    formData.append('variants', JSON.stringify(variants.map(v => ({
+      variantId: v.variantId,
+      qty: String(v.qty),
+    }))));
+
     try {
-      const response = await PutUrl.put(
-        `/cart/${cartItemId}`,
-        { quantity },
+      const response = await axios.post(
+        'https://steel-junction.onrender.com/api/cart',
+        formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
 
-      toast.success("Cart updated");
-      return response.data.data; // updated cart item
+      console.log("✅ Cart Update Success:", response.data);
+      return response.data;
     } catch (error) {
-      toast.error("Failed to update quantity.");
-      return rejectWithValue(error.response?.data?.message || "Something went wrong");
+      console.error('❌ Cart update error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || 'An unknown error occurred');
     }
   }
 );
+
+
+
 
 // 4. Remove Cart Item
 export const removeCartItem = createAsyncThunk(
@@ -811,21 +865,54 @@ const cartSlice = createSlice({
       })
 
       // Update Quantity
+      // Update Quantity
       .addCase(updateCartQuantity.pending, (state) => {
         state.isLoading = true;
+        state.error = null;  // Reset the error state while the request is in progress
       })
+      // .addCase(updateCartQuantity.fulfilled, (state, action) => {
+      //   state.isLoading = false;
+      
+      //   // ✅ Check if actual data exists
+      //   if (action.payload && Array.isArray(action.payload)) {
+      //     state.cart = action.payload;
+      
+      //     // Optional: recalculate totals
+      //     state.totalQty = state.cart.reduce((sum, item) => sum + item.totalQty, 0);
+      //     state.subtotal = state.cart.reduce((sum, item) => sum + item.totalPrice, 0);
+      //   } else {
+      //     // ✅ Just show toast or log if no cart data received
+      //     console.log("✅ No cart data returned from server:", action.payload);
+      //     toast.success(action.payload?.message || "Cart updated successfully");
+      //   }
+      // })
       .addCase(updateCartQuantity.fulfilled, (state, action) => {
-        state.isLoading = false;
-        const index = state.cart.findIndex((item) => item._id === action.payload._id);
-        if (index !== -1) {
-          state.cart[index] = action.payload;
+        console.log("🛒 Add to Cart Reducer Payload:", action.payload);
+  
+        // ✅ If payload contains cart data like updatedCart
+        if (action.payload && action.payload.updatedCart) {
+          state.cartItems = action.payload.updatedCart;
         }
+  
+        // ✅ Or if it's just the cart array directly
+        else if (Array.isArray(action.payload)) {
+          state.cartItems = action.payload;
+        }
+  
+        // ❌ If response doesn't return cart array, you may need to refetch cart
       })
       .addCase(updateCartQuantity.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        if (action.payload) {
+          // Log the full error payload for debugging
+          console.error("Error payload:", action.payload);
+          toast.error(action.payload.message || "Something went wrong.");
+        } else {
+          toast.error("An unknown error occurred.");
+        }
+        state.error = action.payload || { message: "Something went wrong" };
       })
-
+       
       // Remove Item
       .addCase(removeCartItem.pending, (state) => {
         state.isLoading = true;

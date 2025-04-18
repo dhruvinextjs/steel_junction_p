@@ -343,7 +343,7 @@ const ForgotPasscodePage = () => {
 
                 {/* Title */}
                 <h2 className="text-3xl font-semibold text-[#323232]">
-                  You're all set up
+                  You&rsquo;re all set up
                 </h2>
 
                 {/* Description */}

@@ -2,6 +2,8 @@ import { PostUrl, PutUrl } from "@/app/api/BaseUrl";
 import { getToken } from "@/utils/auth";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+
 
 const persistToLocalStorage = (key, value) => {
   if (typeof window !== "undefined") {
@@ -173,74 +175,32 @@ export const handleCheckLoginPasscode = createAsyncThunk(
 );
 
 // Edit Profile
-
-// export const handleEditProfile = createAsyncThunk(
-//   "auth/handleEditProfile",
-//   async (formData, { rejectWithValue }) => {
-//     console.log("Token retrieved:", token); // Log token
-
-//     if (!token) {
-//       toast.error("Please provide an authentication token.");
-//       return rejectWithValue("Authentication token not found.");
-//     }
-
-//      // Decode token to check expiry (for debugging)
-//      const decodedToken = JSON.parse(atob(token.split('.')[1]));
-//      console.log("Decoded Token:", decodedToken);
-//      console.log("Token Expiry:", new Date(decodedToken.exp * 1000));
-
-//      try {
-//       const { data } = await PutUrl("/auth/editProfile", formData, {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-    
-//       if (data && data.user) {
-//         persistToLocalStorage("user", JSON.stringify(data.user));
-//         return { user: data.user };  // Ensure user data is returned correctly
-//       } else {
-//         toast.error("No user data returned.");
-//         return rejectWithValue("No user data returned.");
-//       }
-//     } catch (error) {
-//       console.error("Error:", error.response?.data);
-//       toast.error(error?.response?.data?.message || "Profile update failed");
-//       return rejectWithValue(error?.response?.data?.message);
-//     }
-//   }
-// );
-
-// features/AuthSlice.js
 export const handleEditProfile = createAsyncThunk(
   "auth/handleEditProfile",
   async ({ formData, token }, { rejectWithValue }) => {
-    // Log token to verify it's passed correctly
     console.log("Token passed to handleEditProfile:", token);
 
     try {
-      const decodedToken = jwtDecode(token);
-      if (!token || decodedToken.exp * 1000 < Date.now()) {
-        toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("token"); // Clear the expired token
-        window.location.href = "/login"; // Redirect to login page
-        return rejectWithValue("Token expired");
+      if (!token) {
+        toast.error("Authentication token is missing.");
+        return rejectWithValue("Token missing");
       }
 
-      const { data } = await PutUrl("/auth/editProfile", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Set the token on the instance
+      PutUrl.defaults.headers["Authorization"] = `Bearer ${token}`;
+      PutUrl.defaults.headers["Content-Type"] = "multipart/form-data";
+
+      const { data } = await PutUrl("/auth/editProfile", formData);
 
       toast.success("Profile updated successfully!");
       return data;
     } catch (error) {
       console.error("Error during profile update:", error);
-      toast.error(error?.response?.data?.message || "Profile update failed!");
-      return rejectWithValue(error.message);
+
+      const errorMessage = error?.response?.data?.message || "Profile update failed!";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
