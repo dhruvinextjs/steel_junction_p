@@ -206,40 +206,57 @@ export const handleEditProfile = createAsyncThunk(
 );
 
 
+// export const handleSendEnquiry = createAsyncThunk(
+//   "auth/handleSendEnquiry",
+//   async ({ name, email, contactNo, enquiry, image }, { rejectWithValue }) => {
+//     const token = getToken();
+//     if (!token) return rejectWithValue("Authentication token not found.");
+//     const formData = new FormData();
+//     // formData.append("productId", productId);
+//     formData.append("name", name);
+//     formData.append("email", email);
+//     formData.append("contactNo", contactNo);
+//     formData.append("enquiry", enquiry);
+//     if (image) formData.append("image", image); // Add image if present
+
+//     try {
+//       const { data } = await PostUrl("/order/sendEnquiry", {
+//         method: "POST",
+//         data: formData,
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//           Authorization: `Bearer ${token}`,
+//         },
+//       });
+//       toast.success(data.message || "Enquiry sent successfully!");
+//       console.log(data, "enquiry");
+//       persistToLocalStorage("token", data.token);
+//       return data;
+//     } catch (error) {
+//        console.log("Error details:", error); 
+//       toast.error(error?.response?.data?.message || "Failed to send enquiry.");
+//       return rejectWithValue(error?.response?.data);
+//     }
+//   }
+// );
+
 export const handleSendEnquiry = createAsyncThunk(
   "auth/handleSendEnquiry",
-  async ({ name, email, contactNo, enquiry, image }, { rejectWithValue }) => {
-    const token = getToken();
-    if (!token) return rejectWithValue("Authentication token not found.");
-    const formData = new FormData();
-    // formData.append("productId", productId);
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("contactNo", contactNo);
-    formData.append("enquiry", enquiry);
-    if (image) formData.append("image", image); // Add image if present
-
+  async ({ formData, token }, { rejectWithValue }) => {
     try {
-      const { data } = await PostUrl("/order/sendEnquiry", {
-        method: "POST",
-        data: formData,
+      const response = await PostUrl.post("/order/sendEnquiry", formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
-      toast.success(data.message || "Enquiry sent successfully!");
-      console.log(data, "enquiry");
-      persistToLocalStorage("token", data.token);
-      return data;
+      toast.success("Enquiry sent successfully!");
+      return response.data;
     } catch (error) {
-       console.log("Error details:", error); 
-      toast.error(error?.response?.data?.message || "Failed to send enquiry.");
-      return rejectWithValue(error?.response?.data);
+      toast.error(error?.response?.data?.message || "Failed to send enquiry");
+      return rejectWithValue(error.response.data);
     }
   }
 );
-
 
 // Forgot Passcode - Send OTP
 export const handleForgotPasscode = createAsyncThunk(

@@ -10,6 +10,11 @@ import GetCartSlice from "./CartSlice";
 import GstDetailSlice from "./GstDetailSlice";
 import addressReducer from "./AddressSlice"
 import enquiryReducer from "./EnquirySlice"
+import orderReducer from "./OrderSlice"
+import chatReducer from "./ChatSlice"
+import smsReducer from "./SmsSlice"
+import myOrderReducer from "./MyOrderSlice"
+import orderDetailReducer from "./MyOrderDetailSlice"
 // const rootPersistConfig = {
 //   key: "root",
 //   storage,
@@ -30,7 +35,12 @@ const rootReducer = combineReducers({
   getCart: GetCartSlice,
   gstDetail:GstDetailSlice,
   address:addressReducer,
-  enquiry:enquiryReducer
+  enquiry:enquiryReducer,
+  order: orderReducer,
+  chat: chatReducer,
+  sms: smsReducer,
+  myOrders:myOrderReducer,
+  orderDetail:orderDetailReducer,
 });
 const persistConfig = {
   key: "root",

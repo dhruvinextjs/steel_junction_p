@@ -21,7 +21,6 @@ export const addAddress = createAsyncThunk(
 
     try {
       const res = await PostUrl.post("/address/add", formData, { headers });
-
       const data = res?.data;
 
       // ✅ Only toast on success
@@ -75,7 +74,6 @@ export const getAddressList = createAsyncThunk(
       }
     }
   );
-  
  
   export const updateAddress = createAsyncThunk(
     "address/updateAddress",
@@ -121,23 +119,55 @@ export const deleteAddress = createAsyncThunk(
       }
     }
   );
-  
-  
- 
+
+// export const setDefaultAddress = createAsyncThunk(
+//   "address/setDefaultAddress",
+//   async ({ selectedId, allAddresses, token }, thunkAPI) => {
+//     try {
+//       // 1. Set all other addresses to isDefault: false
+//       for (let address of allAddresses) {
+//         if (address._id !== selectedId && address.isDefault) {
+//           await PutUrl(`/address/update/${address._id}`, {
+//             isDefault: false,
+//           }, {
+//             headers: { Authorization: `Bearer ${token}` },
+//           });
+//         }
+//       }
+
+//       // 2. Set selected address to isDefault: true
+//       const response = await PutUrl(`/address/update/${selectedId}`, {
+//         isDefault: true,
+//       }, {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+
+//       return response.data;
+//     } catch (error) {
+//       return thunkAPI.rejectWithValue(error?.response?.data?.message || "Failed to set default address");
+//     }
+//   }
+// );
+
 export const setDefaultAddress = createAsyncThunk(
   "address/setDefaultAddress",
-  async ({ id, token }, { rejectWithValue }) => {
+  async ({ selectedId, token }, thunkAPI) => {
     try {
-      const res = await PutUrl("/user/set-default-address", { id }, token);
-      toast.success("Default address set!");
-      return id;
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to set default");
-      return rejectWithValue(err.response.data);
+      const response = await PutUrl.put(`/user/default-address/${selectedId}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return {
+        defaultAddressId: selectedId,
+        message: response?.data?.message,
+      };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error?.response?.data?.message || "Failed to set default address");
     }
   }
 );
- 
 // SLICE
 const addressSlice = createSlice({
   name: "address",
@@ -146,6 +176,7 @@ const addressSlice = createSlice({
     loading: false,
     error: null,
     defaultAddressId: null,
+    defaultAddress: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -169,14 +200,10 @@ const addressSlice = createSlice({
       })
       .addCase(getAddressList.fulfilled, (state, action) => {
         state.loading = false;
-        
-        // Log the payload to check the fetched addresses
-        console.log("Fetched Address List:", action.payload);
-      
         if (Array.isArray(action.payload)) {
           state.addresses = action.payload;  // Directly assign the array to state.addresses
-          const defaultAddress = state.addresses.find((address) => address.isDefault);
-          state.defaultAddressId = defaultAddress ? defaultAddress._id : null;
+          const defaultAddr = action.payload.find((addr) => addr.isDefault);
+          state.defaultAddressId = defaultAddr?._id || null;
         } else {
           console.error("No valid address data found in the response");
           state.addresses = [];  // Ensure you handle the empty state properly
@@ -217,12 +244,26 @@ const addressSlice = createSlice({
         state.addresses = state.addresses.filter(
           (address) => address._id !== action.payload
         );
+
+        if (state.defaultAddressId === action.payload) {
+          state.defaultAddressId = null;
+        }
       })
  
       // Set Default
-      .addCase(setDefaultAddress.fulfilled, (state, action) => {
-        state.defaultAddressId = action.payload; // set the default ID in state
-      })
+        // Set Default Address
+        .addCase(setDefaultAddress.pending, (state) => {
+          state.loading = true;
+        })
+        .addCase(setDefaultAddress.fulfilled, (state, action) => {
+          state.defaultAddressId = action.payload.defaultAddressId;
+          toast.success("Default address updated!");
+        })
+        
+        .addCase(setDefaultAddress.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload;
+        });
   },
 });
  

@@ -1274,7 +1274,7 @@ const Details = () => {
           <div className="flex items-center justify-between">
             <p className="text-3xl font-semibold">{productDetails?.name}</p>
             {productDetails?.variants?.[0]?.rtPrice && (
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-white">
                 Price: ₹{productDetails.variants[0].rtPrice}
               </p>
             )}

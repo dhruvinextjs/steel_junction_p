@@ -229,7 +229,7 @@ const Addresses = () => {
 
   const handleSetDefault = (id) => {
     setSelectedAddress(id);
-    dispatch(setDefaultAddress({ id, token }));
+    dispatch(setDefaultAddress({ selectedId: id, token }));
   };
 
   return (
@@ -237,7 +237,7 @@ const Addresses = () => {
       <p className="text-xl text-[#25324B] font-semibold mb-4">Addresses</p>
       <div className="space-y-3">
         {Array.isArray(addresses) && addresses.length > 0 ? (
-          <RadioGroup value={selectedAddress}>
+          <RadioGroup value={selectedAddress}   onValueChange={(id) => handleSetDefault(id)}>
             {addresses.map((address) => (
               <div
                 key={address._id}
@@ -248,8 +248,8 @@ const Addresses = () => {
                     <RadioGroupItem
                       value={address._id} // Use _id as the unique identifier
                       id={address._id}
-                      checked={selectedAddress === address._id}
-                      onChange={() => handleSetDefault(address._id)}
+                      // checked={selectedAddress === address._id}
+                      // onChange={() => handleSetDefault(address._id)}
                     />
                     <div className="w-[80%] font-medium text-sm space-y-1">
                       <p className="font-semibold">{address.fullName}</p>
@@ -275,9 +275,9 @@ const Addresses = () => {
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[450px]">
                         <DialogTitle>Edit Address</DialogTitle>
-                        <DialogDescription>
+                        {/* <DialogDescription>
                           Update your existing address information.
-                        </DialogDescription>
+                        </DialogDescription> */}
                         <hr />
                         <EditAddress
                           setEditAddress={setEditAddress}
@@ -309,9 +309,9 @@ const Addresses = () => {
             className="sm:max-w-[450px]"
           >
             <DialogTitle>Add New Address</DialogTitle>
-            <DialogDescription>
+            {/* <DialogDescription>
               Enter your full address and contact details.
-            </DialogDescription>
+            </DialogDescription> */}
             <hr />
             <AddNewAdd setEditNewAddress={setEditNewAddress} />
           </DialogContent>
