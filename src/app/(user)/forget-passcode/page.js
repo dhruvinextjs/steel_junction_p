@@ -1,11 +1,11 @@
 "use client";
-
+ 
 import { useForm, Controller } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-
+ 
 import { Button } from "@/components/ui/button";
 import Picture from "@/components/ui/picture";
 import {
@@ -19,7 +19,8 @@ import {
   handleResetPasscode,
 } from "@/redux/AuthSlice";
 import Image from "next/image";
-
+import { ArrowLeft } from "lucide-react";
+ 
 // OTP Input Component
 const OTPInput = ({ name, control, errors }) => (
   <Controller
@@ -44,7 +45,7 @@ const OTPInput = ({ name, control, errors }) => (
     )}
   />
 );
-
+ 
 const ForgotPasscodePage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -52,7 +53,7 @@ const ForgotPasscodePage = () => {
   const [step, setStep] = useState(1);
   const [visibleOtp, setVisibleOtp] = useState("");
   const [otpTimer, setOtpTimer] = useState(0); // Timer for OTP resend
-
+ 
   const {
     control,
     handleSubmit,
@@ -67,7 +68,7 @@ const ForgotPasscodePage = () => {
       confirmPasscode: "",
     },
   });
-
+ 
   const onSubmit = async (data) => {
     try {
       switch (step) {
@@ -79,12 +80,12 @@ const ForgotPasscodePage = () => {
           const otpResponse = await dispatch(
             handleForgotPasscode({ mobileNumber: data.phone })
           ).unwrap();
-
+ 
           if (otpResponse.otp) setVisibleOtp(otpResponse.otp);
-          toast.success("OTP sent to your mobile");
+          // toast.success("OTP sent to your mobile");
           setStep(2);
           break;
-
+ 
         case 2:
           if (data.otp.length !== 4) {
             toast.error("OTP must be 4 digits");
@@ -96,7 +97,7 @@ const ForgotPasscodePage = () => {
           toast.success("OTP verified successfully");
           setStep(3);
           break;
-
+ 
         case 3:
           if (data.newPasscode.length !== 4) {
             toast.error("Passcode must be 4 digits");
@@ -104,26 +105,23 @@ const ForgotPasscodePage = () => {
           }
           setStep(4);
           break;
-
+ 
         case 4:
           if (data.newPasscode !== data.confirmPasscode) {
             toast.error("Passcodes do not match");
             return;
           }
-
+ 
           await dispatch(
             handleResetPasscode({
               mobileNumber: data.phone,
               newPasscode: data.newPasscode,
             })
           ).unwrap();
-          toast.success("Passcode reset successfully");
+          // toast.success("Passcode reset successfully");
           setStep(5);
-          setTimeout(() => {
-            router.push("/login");
-          }, 6000);
           break;
-
+ 
         default:
           break;
       }
@@ -131,7 +129,7 @@ const ForgotPasscodePage = () => {
       toast.error(error?.message || "Something went wrong");
     }
   };
-
+ 
   const handleResendOtp = async (phone) => {
     // Call the API to resend the OTP
     try {
@@ -153,7 +151,7 @@ const ForgotPasscodePage = () => {
       toast.error("Error resending OTP");
     }
   };
-
+ 
   return (
     <div className="grid w-screen lg:grid-cols-2">
       <div className="hidden relative lg:block bg-[url('/static/images/signin.png')] bg-cover">
@@ -167,37 +165,23 @@ const ForgotPasscodePage = () => {
           />
         </div>
       </div>
-
+ 
       <div className="flex items-center justify-center min-h-screen bg-[#FAFAFA] p-6">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="w-full max-w-sm p-4 space-y-4 bg-white rounded-lg shadow-md md:p-6"
         >
           {/* Back Button for steps > 1 */}
-          {step > 1 && (
+          {step > 1 && step < 5 && (
             <button
               type="button"
               onClick={() => setStep(step - 1)}
               className="flex items-center gap-2 mb-2 text-sm text-gray-600 hover:text-black"
             >
-              {/* <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg> */}
-              <i className="fa-solid fa-arrow-left"></i>
+              <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-
+ 
           {/* Step 1: Enter Phone */}
           {step === 1 && (
             <>
@@ -234,7 +218,7 @@ const ForgotPasscodePage = () => {
               </Button>
             </>
           )}
-
+ 
           {/* Step 2: Verify OTP */}
           {step === 2 && (
             <>
@@ -277,7 +261,7 @@ const ForgotPasscodePage = () => {
               </div>
             </>
           )}
-
+ 
           {/* Step 3: New Passcode */}
           {step === 3 && (
             <>
@@ -303,7 +287,7 @@ const ForgotPasscodePage = () => {
               </Button>
             </>
           )}
-
+ 
           {/* Step 4: Confirm Passcode */}
           {step === 4 && (
             <>
@@ -330,39 +314,41 @@ const ForgotPasscodePage = () => {
             </>
           )}
           {step === 5 && (
-            <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-white">
-              <div className="w-full max-w-md space-y-6 text-center">
-                {/* Success Tick Image */}
+            // <div className="flex items-center justify-center px-4 py-12 bg-black" style={{ minHeight: '300px' }}>
+            <div className="w-full max-w-md space-y-6 text-center border border-gray-200 rounded-lg shadow-md">
+              {/* Success Tick Image */}
+              <div className="mt-6">
                 <Image
-                  src="/static/images/success.png" // Save this image in public/images folder
+                  src="/static/images/success.png"
                   alt="Success"
-                  width={120}
-                  height={120}
+                  width={100}
+                  height={100}
                   className="mx-auto"
                 />
-
-                {/* Title */}
-                <h2 className="text-3xl font-semibold text-[#323232]">
-                  You&rsquo;re all set up
-                </h2>
-
-                {/* Description */}
-                <p className="text-[#7D7D7D] text-base font-medium">
-                  You have successfully signed up. You can now log in and get
-                  started with your journey.
-                </p>
-
-                {/* Let’s Go Button */}
-                <button
-                  onClick={() => router.push("/login")}
-                  className="w-full px-6 py-3 text-base font-semibold text-white transition rounded-lg bg-primary"
-                >
-                  Let’s Go
-                </button>
               </div>
+ 
+              {/* Title */}
+              <h2 className="text-2xl font-semibold text-[#323232] mb-2">
+                Passcode Changed!
+              </h2>
+ 
+              {/* Description */}
+              <p className="text-[#7D7D7D] text-base font-medium px-4">
+                Your passcode has been changed successfully.
+              </p>
+ 
+              {/* Let’s Go Button */}
+              <button
+                onClick={() => router.push("/login")}
+                style={{marginBottom:"20px"}}
+                className="w-auto px-8 py-3 text-base font-medium text-white transition-colors duration-200 bg-black rounded-full hover:bg-black"
+              >
+                Let’s Go
+              </button>
             </div>
+            // </div>
           )}
-
+ 
           {/* Step 5: Done */}
           {/* {step === 5 && (
             <p className="font-medium text-center text-black">
@@ -374,5 +360,6 @@ const ForgotPasscodePage = () => {
     </div>
   );
 };
-
+ 
 export default ForgotPasscodePage;
+ 

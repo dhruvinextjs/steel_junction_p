@@ -1,306 +1,189 @@
-// import { PostUrl, PutUrl } from "@/app/api/BaseUrl";
-// import { getToken } from "@/utils/auth";
-// import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-// import toast from "react-hot-toast";
- 
-// // Add GST Detail
-// export const handleAddGstDetail = createAsyncThunk(
-//   "gst/handleAddGstDetail",
-//   async ({ gstNumber, certificate }, { rejectWithValue }) => {
-//     const token = getToken();
-//     if (!token) return rejectWithValue("Authentication token not found.");
- 
-//     const formData = new FormData();
-//     formData.append("gstNumber", gstNumber);
-//     if (certificate) {
-//       formData.append("certificate", certificate);
-//     }
- 
-//     try {
-//       const { data } = await PostUrl("/auth/addGstDetail", {
-//         method: "POST",
-//         data: formData,
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-//       toast.success("GST Details added successfully.");
-//       return data;
-//     } catch (error) {
-//       toast.error(error?.response?.data?.message || "Failed to add GST details.");
-//       return rejectWithValue(error?.response?.data);
-//     }
-//   }
-// );
-
-// //get 
-// export const getGstDetails = createAsyncThunk(
-//   "gst/getGstDetails",
-//   async (_, { rejectWithValue }) => {
-//     const token = getToken();
-//     if (!token) return rejectWithValue("Authentication token not found.");
-    
-//     try {
-//       const { data } = await GetUrl.get("/auth/getGstDetails", {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-//       return data; // Assuming the response contains the GST details
-//     } catch (error) {
-//       toast.error(error?.response?.data?.message || "Failed to fetch GST details.");
-//       return rejectWithValue(error?.response?.data);
-//     }
-//   }
-// );
-
- 
-// // Update GST Detail
-// export const handleUpdateGstDetail = createAsyncThunk(
-//   "gst/handleUpdateGstDetail",
-//   async ({ gstNumber, certificate }, { rejectWithValue }) => {
-//     const token = getToken();
-//     if (!token) return rejectWithValue("Authentication token not found.");
- 
-//     const formData = new FormData();
-//     formData.append("gstNumber", gstNumber);
-//     if (certificate) {
-//       formData.append("certificate", certificate);
-//     }
- 
-//     try {
-//       const { data } = await PutUrl("/auth/updateGstDetail", {
-//         method: "PUT",
-//         data: formData,
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-//       toast.success("GST Details updated successfully.");
-//       return data;
-//     } catch (error) {
-//       toast.error(error?.response?.data?.message || "Failed to update GST details.");
-//       return rejectWithValue(error?.response?.data);
-//     }
-//   }
-// );
- 
-// // Initial State
-// const initialState = {
-//   loading: false,
-//   error: null,
-//   gstDetails: null,
-// };
- 
-// // GST Slice
-// const GstDetailSlice = createSlice({
-//   name: "gstDetail",
-//   initialState,
-//   reducers: {},
-//   extraReducers: (builder) => {
-//     // Add GST
-//     builder.addCase(handleAddGstDetail.pending, (state) => {
-//       state.loading = true;
-//       state.error = null;
-//     });
-//     builder.addCase(handleAddGstDetail.fulfilled, (state, { payload }) => {
-//       state.loading = false;
-//       state.gstDetails = payload.gstDetails;
-//     });
-//     builder.addCase(handleAddGstDetail.rejected, (state, { payload }) => {
-//       state.loading = false;
-//       state.error = payload;
-//     });
- 
-//     // Update GST
-//     builder.addCase(handleUpdateGstDetail.pending, (state) => {
-//       state.loading = true;
-//       state.error = null;
-//     });
-//     builder.addCase(handleUpdateGstDetail.fulfilled, (state, { payload }) => {
-//       state.loading = false;
-//       state.gstDetails = payload.gstDetails;
-//     });
-//     builder.addCase(handleUpdateGstDetail.rejected, (state, { payload }) => {
-//       state.loading = false;
-//       state.error = payload;
-//     });
-
-//     builder.addCase(getGstDetails.pending, (state) => {
-//       state.loading = true;
-//       state.error = null;
-//     });
-//     builder.addCase(getGstDetails.fulfilled, (state, { payload }) => {
-//       state.loading = false;
-//       state.gstDetails = payload.gstDetails; // Assuming this contains your GST data
-//     });
-//     builder.addCase(getGstDetails.rejected, (state, { payload }) => {
-//       state.loading = false;
-//       state.error = payload;
-//     });
-    
-//   },
-// });
- 
-// export default GstDetailSlice.reducer;
-
+// In GstDetailSlice.js
 import { PostUrl, PutUrl, GetUrl } from "@/app/api/BaseUrl";
 import { getToken } from "@/utils/auth";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 
+const getInitialGstDetails = () => {
+    if (typeof window !== 'undefined') {
+        const storedGstDetails = localStorage.getItem('gstDetails');
+        if (storedGstDetails) {
+            try {
+                return JSON.parse(storedGstDetails);
+            } catch (error) {
+                console.error("Error parsing GST details from localStorage:", error);
+                return null;
+            }
+        }
+    }
+    return null;
+};
+
 // Add GST Detail
 export const handleAddGstDetail = createAsyncThunk(
-  "gst/handleAddGstDetail",
-  async ({ gstNumber, certificate }, { rejectWithValue }) => {
-    const token = getToken();
-    if (!token) return rejectWithValue("Authentication token not found.");
+    "gst/handleAddGstDetail",
+    async ({ gstNumber, certificate }, { rejectWithValue, dispatch }) => {
+        const token = getToken();
+        if (!token) return rejectWithValue("Authentication token not found.");
 
-    const formData = new FormData();
-    formData.append("gstNumber", gstNumber);
-    if (certificate) {
-      formData.append("certificate", certificate);
-    }
+        const formData = new FormData();
+        formData.append("gstNumber", gstNumber);
+        if (certificate) {
+            formData.append("certificate", certificate);
+        }
 
-    try {
-      const { data } = await PostUrl("/auth/addGstDetail", {
-        method: "POST",
-        data: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      toast.success("GST Details added successfully.");
-      return data;
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to add GST details.");
-      return rejectWithValue(error?.response?.data);
+        try {
+            const { data } = await PostUrl("/auth/addGstDetail", {
+                method: "POST",
+                data: formData,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            toast.success("GST Details added successfully.");
+
+            if (data?.user) {
+                const { gstNumber, gstCertificate } = data.user;
+                const gstDetails = { gstNumber, certificateUrl: gstCertificate };
+                localStorage.setItem('gstDetails', JSON.stringify(gstDetails));
+                dispatch(setGstDetailsFromStorage(gstDetails));
+            }
+            return { user: data.user };
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Failed to add GST details.");
+            return rejectWithValue(error?.response?.data);
+        }
     }
-  }
 );
 
-// Get GST Details
-export const getGstDetails = createAsyncThunk(
-  "gst/getGstDetails",
-  async (_, { rejectWithValue }) => {
-    const token = getToken();
-    if (!token) return rejectWithValue("Authentication token not found.");
+// Get User Details (which includes GST details)
+export const getUserDetails = createAsyncThunk(
+    "gst/getUserDetails",
+    async (_, { rejectWithValue, dispatch }) => {
+        const token = getToken();
+        if (!token) return rejectWithValue("Authentication token not found.");
 
-    try {
-      const { data } = await GetUrl.get("/auth/getGstDetails", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return data;
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to fetch GST details.");
-      return rejectWithValue(error?.response?.data);
+        try {
+            const { data } = await GetUrl.get("/auth/userDetail", { // <--- UPDATE THIS URL
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (data?.data) { // Access the 'data' object as per your sample
+                const { gstNumber, gstCertificate } = data.data;
+                const gstDetails = { gstNumber, certificateUrl: gstCertificate };
+                localStorage.setItem('gstDetails', JSON.stringify(gstDetails));
+                dispatch(setGstDetailsFromStorage(gstDetails));
+                return data.data; // Return the user data
+            }
+            return data;
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Failed to fetch user details.");
+            return rejectWithValue(error?.response?.data);
+        }
     }
-  }
 );
 
 // Update GST Detail
 export const handleUpdateGstDetail = createAsyncThunk(
-  "gst/handleUpdateGstDetail",
-  async ({ gstNumber, certificate }, { rejectWithValue }) => {
-    const token = getToken();
-    if (!token) return rejectWithValue("Authentication token not found.");
+    "gst/handleUpdateGstDetail",
+    async ({ gstNumber, certificate }, { rejectWithValue, dispatch }) => {
+        const token = getToken();
+        if (!token) return rejectWithValue("Authentication token not found.");
 
-    const formData = new FormData();
-    formData.append("gstNumber", gstNumber);
-    if (certificate) {
-      formData.append("certificate", certificate);
-    }
+        const formData = new FormData();
+        formData.append("gstNumber", gstNumber);
+        if (certificate) {
+            formData.append("certificate", certificate);
+        }
 
-    try {
-      const { data } = await PutUrl("/auth/userDetail", {
-        method: "PUT",
-        data: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      toast.success("GST Details updated successfully.");
-      return data;
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update GST details.");
-      return rejectWithValue(error?.response?.data);
+        try {
+            const { data } = await PutUrl("/auth/updateGstDetail", { // <--- UPDATE THIS URL
+                method: "PUT",
+                data: formData,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            toast.success("GST Details updated successfully.");
+
+            if (data?.user) {
+                const { gstNumber, gstCertificate } = data.user;
+                const gstDetails = { gstNumber, certificateUrl: gstCertificate };
+                localStorage.setItem('gstDetails', JSON.stringify(gstDetails));
+                dispatch(setGstDetailsFromStorage(gstDetails));
+            }
+            return { user: data.user };
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Failed to update GST details.");
+            return rejectWithValue(error?.response?.data);
+        }
     }
-  }
 );
-
-// In GstDetailSlice.js
-export const setGstDetailsFromStorage = (details) => {
-  return {
-    type: "SET_GST_DETAILS",
-    payload: details,
-  };
-};
-
 
 // Initial State
 const initialState = {
-  loading: false,
-  error: null,
-  gstDetails: null,
+    loading: false,
+    error: null,
+    gstDetails: getInitialGstDetails(),
 };
 
 // Slice
 const GstDetailSlice = createSlice({
-  name: "gstDetail",
-  initialState,
-  // reducers: {},
-  reducers: {
-    setGstDetailsFromStorage: (state, action) => {
-      state.gstDetails = action.payload;
+    name: "gstDetail",
+    initialState,
+    reducers: {
+        setGstDetailsFromStorage: (state, action) => {
+            state.gstDetails = action.payload;
+        },
+        clearGstDetails: (state) => {
+            state.gstDetails = null;
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('gstDetails');
+            }
+        },
     },
-  },
-  extraReducers: (builder) => {
-    // Add
-    builder.addCase(handleAddGstDetail.pending, (state) => {
-      state.loading = true;
-    })
-    builder.addCase(handleAddGstDetail.fulfilled, (state, action) => {
-      state.loading = false;
-      state.gstDetails = action.payload?.gstDetails || null;
-    })
-    builder.addCase(handleAddGstDetail.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
+    extraReducers: (builder) => {
+        builder.addCase(handleAddGstDetail.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(handleAddGstDetail.fulfilled, (state) => {
+            state.loading = false;
+        });
+        builder.addCase(handleAddGstDetail.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        });
 
-    // Update
-    builder.addCase(handleUpdateGstDetail.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(handleUpdateGstDetail.fulfilled, (state, action) => {
-      state.gstDetails = action.payload?.gstDetails || null;
-    });
-    builder.addCase(handleUpdateGstDetail.rejected, (state, { payload }) => {
-      state.loading = false;
-      state.error = payload;
-    });
+        builder.addCase(handleUpdateGstDetail.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(handleUpdateGstDetail.fulfilled, (state) => {
+            state.loading = false;
+        });
+        builder.addCase(handleUpdateGstDetail.rejected, (state, { payload }) => {
+            state.loading = false;
+            state.error = payload;
+        });
 
-    // Get
-    builder.addCase(getGstDetails.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(getGstDetails.fulfilled, (state, { payload }) => {
-      state.loading = false;
-      state.gstDetails = payload.gstDetails;
-    });
-    builder.addCase(getGstDetails.rejected, (state, { payload }) => {
-      state.loading = false;
-      state.error = payload;
-    });
-  },
+        builder.addCase(getUserDetails.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(getUserDetails.fulfilled, (state, action) => {
+            state.loading = false;
+            state.error = null;
+            // The reducer will be updated via the dispatch(setGstDetailsFromStorage) in the thunk
+        });
+        builder.addCase(getUserDetails.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        });
+    },
 });
 
+export const { setGstDetailsFromStorage, clearGstDetails } = GstDetailSlice.actions;
 export default GstDetailSlice.reducer;

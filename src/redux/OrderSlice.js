@@ -1,8 +1,7 @@
-// src/redux/orderSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { getToken } from "../utils/auth"; // Assuming the getToken function is in a utils file
+import { GetUrl , PostUrl} from "@/app/api/BaseUrl";
 
 // Async thunk to fetch order summary
 export const fetchOrderSummary = createAsyncThunk(
@@ -14,19 +13,46 @@ export const fetchOrderSummary = createAsyncThunk(
         return rejectWithValue("No token found");
       }
 
-      const response = await axios.get("https://steel-junction.onrender.com/api/order/summary", {
+      const response = await GetUrl.get("order/summary", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      return response.data.data; // Returning the data object from the API response
+      console.log("Order Summary API Response", response.data);
+
+      // validate structure
+      return response.data?.data || {};
     } catch (error) {
       toast.error("Error fetching order summary. Please try again.");
       return rejectWithValue(error.message || "Failed to fetch order summary");
     }
   }
 );
+export const createOrder = createAsyncThunk(
+  "order/createOrder",
+  async (orderData, { rejectWithValue }) => {
+    try {
+      const token = getToken();
+      if (!token) {
+        return rejectWithValue("No token found");
+      }
+
+      const response = await GetUrl.post("order/createOrder", orderData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Create Order API Response:", response);
+      // toast.success("Order placed successfully!");
+      return response.data;
+    } catch (error) {
+      toast.error("Error placing order. Please try again.");
+      return rejectWithValue(error.message || "Failed to create order");
+    }
+  }
+);
+
 
 const orderSlice = createSlice({
   name: "order",
@@ -76,6 +102,27 @@ const orderSlice = createSlice({
       .addCase(fetchOrderSummary.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch order summary";
+      })
+
+      .addCase(createOrder.pending, (state) => {
+        state.loading = true;
+        state.error = null; // Reset previous errors if any
+      })
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        state.order = action.payload; // Store the created order details
+      
+        // Check if message exists in the response
+        if (action.payload.message) {
+          toast.success(action.payload.message); // Show success message from backend
+        } else {
+          toast.success("Order placed successfully!");
+        }
+      })
+      .addCase(createOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to place order";
+        toast.error("Error placing order. Please try again.");
       });
   },
 });

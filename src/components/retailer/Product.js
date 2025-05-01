@@ -187,9 +187,10 @@ const RetailerProductPage = () => {
             <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full">
               <div className="space-y-3 text-center text-white md:space-y-5">
                 <p className="text-sm font-bold md:text-3xl">
-                  {product.length > 0
+                  {/* {product.length > 0
                     ? `$${product[0].basicPrice}`
-                    : "Price Not Available"}
+                    : "Price Not Available"} */}
+                    Product
                 </p>
               </div>
             </div>

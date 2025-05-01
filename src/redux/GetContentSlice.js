@@ -120,6 +120,16 @@ export const handleSendMessage = createAsyncThunk(
   }
 );
 
+export const handleGetFaqs = createAsyncThunk("content/handleGetFaqs", async (_, thunkAPI) => {
+  try {
+    const response = await GetUrl("cms/faq");
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error?.response?.data?.message || "Something went wrong");
+  }
+});
+
+
 const initialState = {
   loading: false,
   success: false,
@@ -229,23 +239,39 @@ const GetContentSlice = createSlice({
       state.error = action.payload?.message || "Failed to load chat history";
     });
 
+     // FAQs fetch
+     builder.addCase(handleGetFaqs.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(handleGetFaqs.fulfilled, (state, action) => {
+      state.loading = false;
+      state.faqs = action.payload?.data ?? []; // only store the array
+    })
+    .addCase(handleGetFaqs.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
     // Send Message
     builder.addCase(handleSendMessage.fulfilled, (state, { payload }) => {
       if (!payload || !payload.enquiryId || !payload.message) {
         return; // Prevent invalid payload from breaking state
       }
-
+   
       const newMessage = {
         _id: new Date().toISOString(), // Generate unique ID
         msg: payload.message.msg || "Message sent", // Ensure correct format
         sender: "U", // Assuming "U" is the user
       };
-
+   
+      // Ensure this part updates correctly
       state.chatHistory[payload.enquiryId] = [
         ...(state.chatHistory[payload.enquiryId] || []),
         newMessage,
       ];
-    });
+   });
+   
   },
 });
 

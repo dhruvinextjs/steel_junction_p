@@ -8,8 +8,8 @@ const MyAccountpage = () => {
 
   return (
     <div className="w-full">
-      <div className="h-40 md:h-30 bg-primary_color"></div>
-      <div className="container flex flex-col min-h-[55dvh] gap-4 px-1 md:flex-row md:px-5 relative mt-[-7rem] z-[2] md:mb-10">
+      <div className="h-24 md:h-20 bg-primary_color"></div>
+      <div className="container flex flex-col min-h-[55dvh] gap-4 px-1 md:flex-row md:px-5 relative mt-[-2.5rem] z-[2] md:mb-10">
         <div className="shadow-lg h-fit  md:w-[40%] lg:w-[25%] w-[95%] mx-auto space-y-5 z-2 bg-white">
           <MainMenu onTabChange={setTabMenu} tabMenu={tabMenu} />
         </div>

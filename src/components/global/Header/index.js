@@ -66,9 +66,11 @@ const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { searchResults, loading } = useSelector((state) => state.getProduct);
   const [pdfUrl, setPdfUrl] = useState(null);
-  
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   const { user } = useSelector((state) => state.auth);
+
+  
 
   const debouncedSearch = useCallback(
     debounce((value) => {
@@ -111,6 +113,7 @@ const Header = () => {
       }
     }
   }, [role, setRole]);
+  
 
   useEffect(() => {
     window.addEventListener("scroll", () => {
@@ -126,16 +129,22 @@ const Header = () => {
   }, []);
 
   function hanldeLogoutFn() {
-    if (!window.confirm("are you sure")) return;
+    setShowLogoutPopup(true); // Show the custom logout popup
+  }
+
+  const confirmLogout = () => {
     toast.loading("Logout...");
-    // toast.remove();
     setTimeout(() => {
       dispatch(handleLogout());
-      // toast.success("Logout Successfull");
       router.push("/");
       toast.remove();
+      setShowLogoutPopup(false); // Close the popup after logout
     }, 1000);
-  } 
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutPopup(false); // Close the popup
+  };
 
   useEffect(() => {
     // Fetch product PDF URL from the API
@@ -234,14 +243,14 @@ const Header = () => {
           </div>
           <hr />
           {/* {user === null ? (
-            ) : (
-              <Link href="/my-account">
-                <div className="flex items-center gap-2">
-                  <FaRegUserCircle className="text-xl text-[#5E5E6D]" />
-                  <p>My Acount</p>
-                </div>
-              </Link>
-            )} */}
+      ) : (
+        <Link href="/my-account">
+          <div className="flex items-center gap-2">
+            <FaRegUserCircle className="text-xl text-[#5E5E6D]" />
+            <p>My Acount</p>
+          </div>
+        </Link>
+      )} */}
         </div>
       </div>
       {openSidebar && (
@@ -286,7 +295,7 @@ const Header = () => {
                 </p>
               </div>
               <div className="block xl:hidden">
-                <Select
+                {/* <Select
                   onValueChange={handleRoleChange}
                   value={role || "select Role"}
                 >
@@ -297,7 +306,21 @@ const Header = () => {
                     <SelectItem value="wholesaler">Wholesaler</SelectItem>
                     <SelectItem value="retailer">Retailer</SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
+                {user ? (
+                  <Select
+                    onValueChange={handleRoleChange}
+                    value={role || "select Role"}
+                  >
+                    <SelectTrigger className="w-[120px] focus:outline-none capitalize bg-[#FC342A] hover:bg-[#000] text-white font-medium active:scale-90 outline transition text-sm">
+                      <SelectValue placeholder="select Role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="wholesaler">Wholesaler</SelectItem>
+                      <SelectItem value="retailer">Retailer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : null}
               </div>
               <div className="block pl-2 xl:hidden">
                 <BiMenuAltRight
@@ -378,6 +401,9 @@ const Header = () => {
                 )}
                 {role === "retailer" && (
                   <div className="flex items-center gap-6">
+                    <li className="hover:bg-[#F5F5F5] invisible flex items-center gap-2 text-base py-2 px-3">
+                      Profil
+                    </li>
                     <ChatsSection />
                   </div>
                 )}
@@ -398,10 +424,12 @@ const Header = () => {
                             Profile
                           </li>
                         </Link>
-                        <li className="hover:bg-[#F5F5F5] text-base flex items-center gap-2 py-2 px-3">
+                      <Link href={"/myOrders"}>
+                      <li className="hover:bg-[#F5F5F5] text-base flex items-center gap-2 py-2 px-3">
                           <PiNoteDuotone className="text-lg" />
                           My Orders
                         </li>
+                      </Link>
                         <li
                           className="hover:bg-[#F5F5F5] text-[#F10000] text-base flex items-center gap-2 py-2 px-3"
                           onClick={() => hanldeLogoutFn()}
@@ -459,6 +487,33 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Custom Logout Popup */}
+      {showLogoutPopup && (
+        <div className="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50">
+          <div className="p-6 text-center bg-white rounded-md shadow-lg">
+            <div className="flex items-center justify-center mb-4">
+              <LuLogOut className="text-3xl text-red-500" />{" "}
+              {/* You can use a different icon */}
+            </div>
+            <p className="mb-4 text-xs">Are you sure you want to log out?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                className="px-6 py-2 text-sm bg-white border-gray-400 rounded-md"
+                onClick={cancelLogout}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 text-sm text-white bg-black rounded-md hover:bg-gray-800 focus:outline-none"
+                onClick={confirmLogout}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

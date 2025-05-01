@@ -1,339 +1,321 @@
 // // "use client";
-// // import React, { useState } from "react";
+// // import React, { useEffect, useState } from "react";
+// // import { useDispatch, useSelector } from "react-redux";
+// // import {
+// //     handleAddGstDetail,
+// //     handleUpdateGstDetail,
+// //     getUserDetails,
+// // } from "@/redux/GstDetailSlice";
 // // import { Button } from "@/components/ui/button";
 // // import { X } from "lucide-react";
- 
-// // const GstDetails = () => {
-// //   const [gstNumber, setGstNumber] = useState("");
-// //   const [gstFile, setGstFile] = useState(null);
-// //   const [preview, setPreview] = useState(null);
-// //   const [showPopup, setShowPopup] = useState(false);
- 
-// //   const handleFileChange = (e) => {
-// //     const file = e.target.files[0];
-// //     setGstFile(file);
-// //     setPreview(URL.createObjectURL(file));
-// //   };
- 
-// //   const handleUpdateClick = () => {
-// //     setShowPopup(true);
-// //   };
- 
-// //   return (
-// //     <div className="flex flex-col w-full gap-4 lg:flex-row">
-// //       {/* GST Form */}
-// //       <div className="flex-grow p-4 bg-white rounded-md border border-[#ddd]">
-// //         <div className="px-4 py-2 text-lg font-semibold text-white bg-black rounded-t">
-// //           GST Details
-// //         </div>
- 
-// //         <div className="p-4 space-y-4">
-// //           {/* GSTIN + Upload Button in one row */}
-// //           <div>
-// //             <label className="block mb-1 text-sm font-medium">GSTIN Number*</label>
-// //             <div className="flex items-center gap-4">
-// //               <input
-// //                 type="text"
-// //                 value={gstNumber}
-// //                 onChange={(e) => setGstNumber(e.target.value)}
-// //                 placeholder="Enter GST Number"
-// //                 className="flex-grow px-3 py-2 text-sm border border-gray-300 rounded"
-// //               />
-// //               <label>
-// //                 <input
-// //                   type="file"
-// //                   onChange={handleFileChange}
-// //                   className="hidden"
-// //                 />
-// //                 <Button className="px-4 py-1 text-sm text-white bg-red-400 rounded hover:bg-red-600">
-// //                   Upload
-// //                 </Button>
-// //               </label>
-// //             </div>
-// //           </div>
- 
-// //           <div>
-// //             <label className="block mb-1 text-sm font-medium">GST Certificate*</label>
-// //             {preview && (
-// //               <div className="mt-2">
-// //                 <img
-// //                   src={preview}
-// //                   alt="GST Certificate"
-// //                   className="w-auto border rounded h-28"
-// //                 />
-// //               </div>
-// //             )}
-// //           </div>
- 
-// //           <div className="pt-2">
-// //             <Button
-// //               onClick={handleUpdateClick}
-// //               className="text-white bg-black hover:bg-gray-800"
-// //             >
-// //               Update
-// //             </Button>
-// //           </div>
-// //         </div>
-// //       </div>
- 
-// //       {/* Order Summary */}
-// //       <div className="bg-white border border-[#ddd] rounded-md p-4 lg:w-[350px] w-full">
-// //         <p className="pb-2 mb-3 font-semibold border-b text-md">Order Summary</p>
-// //         <div className="space-y-2 text-sm text-[#333]">
-// //           <div className="flex justify-between">
-// //             <span>Total Qty</span>
-// //             <span>26 MT</span>
-// //           </div>
-// //           <div className="flex justify-between">
-// //             <span>Subtotal</span>
-// //             <span>₹ 11,28,404.7</span>
-// //           </div>
-// //           <div className="flex justify-between">
-// //             <span>Loading Charge (₹265 PMT)</span>
-// //             <span>₹ 6,890</span>
-// //           </div>
-// //           <div className="flex justify-between">
-// //             <span>Insurance (₹30 PMT)</span>
-// //             <span>₹ 780</span>
-// //           </div>
-// //           <div className="flex justify-between">
-// //             <span>GST (18%)</span>
-// //             <span>₹ 2,03,112.85</span>
-// //           </div>
-// //           <div className="flex justify-between">
-// //             <span>TCS (0.1%)</span>
-// //             <span>₹ 1,339.18</span>
-// //           </div>
-// //           <hr />
-// //           <div className="flex justify-between font-semibold">
-// //             <span>Order Total</span>
-// //             <span>₹ 13,40,526.73</span>
-// //           </div>
-// //           <div className="flex justify-between">
-// //             <span>Round Off</span>
-// //             <span>- ₹ 0.73</span>
-// //           </div>
-// //           <div className="flex justify-between text-lg font-bold text-black">
-// //             <span>Gross Total Amount</span>
-// //             <span>₹ 13,40,526</span>
-// //           </div>
-// //         </div>
-// //         <Button className="w-full mt-4 text-white bg-black hover:bg-gray-800">
-// //           Proceed to Buy
-// //         </Button>
-// //       </div>
- 
-// //       {/* 👇 Inline Popup Section (Same Page) */}
-// //       {showPopup && (
-// //         <div className="fixed right-10 bottom-10 z-40 bg-white w-[400px] rounded-md shadow-xl border border-gray-300 p-5">
-// //           {/* Close button */}
-// //           <button
-// //             className="absolute text-gray-600 top-2 right-2 hover:text-black"
-// //             onClick={() => setShowPopup(false)}
-// //           >
-// //             <X size={18} />
-// //           </button>
- 
-// //           <h2 className="mb-4 text-lg font-semibold">Edit GST Details</h2>
- 
-// //           <div className="space-y-4">
-// //             <div>
-// //               <label className="text-sm font-medium">GSTIN Number*</label>
-// //               <input
-// //                 type="text"
-// //                 value={gstNumber}
-// //                 disabled
-// //                 className="w-full px-3 py-2 mt-1 text-sm bg-gray-100 border border-gray-300 rounded"
-// //               />
-// //             </div>
- 
-// //             <div>
-// //               <label className="text-sm font-medium">GST Certificate*</label>
-// //               <div className="flex items-center gap-4 mt-1">
-// //                 <span className="text-sm">{gstFile?.name || "GST.jpg"}</span>
-// //                 <Button className="px-4 py-1 text-sm text-white bg-red-400 hover:bg-red-600">
-// //                   Upload
-// //                 </Button>
-// //               </div>
-// //             </div>
- 
-// //             {preview && (
-// //               <div>
-// //                 <img
-// //                   src={preview}
-// //                   alt="GST Preview"
-// //                   className="border rounded h-28"
-// //                 />
-// //               </div>
-// //             )}
- 
-// //             <Button
-// //               onClick={() => setShowPopup(false)}
-// //               className="w-full text-white bg-black hover:bg-gray-800"
-// //             >
-// //               Update
-// //             </Button>
-// //           </div>
-// //         </div>
-// //       )}
-// //     </div>
-// //   );
-// // };
- 
-// // export default GstDetails;
 
+// // const GstDetails = () => {
+// //     const dispatch = useDispatch();
+// //     const { loading, gstDetails } = useSelector((state) => state.gstDetail);
+
+// //     const [gstNumber, setGstNumber] = useState("");
+// //     const [gstFile, setGstFile] = useState(null);
+// //     const [preview, setPreview] = useState(null);
+// //     const [showPopup, setShowPopup] = useState(false);
+
+// //     const [editGstNumber, setEditGstNumber] = useState("");
+// //     const [editGstFile, setEditGstFile] = useState(null);
+// //     const [editPreview, setEditPreview] = useState(null);
+
+// //     useEffect(() => {
+// //         if (gstDetails) {
+// //             setGstNumber(gstDetails.gstNumber || "");
+// //             setPreview(gstDetails.certificateUrl || null);
+// //             setEditGstNumber(gstDetails.gstNumber || "");
+// //             setEditPreview(gstDetails.certificateUrl || null);
+// //         } else {
+// //             dispatch(getUserDetails());
+// //         }
+// //     }, [gstDetails, dispatch]);
+
+// //     const handleFileChange = (e) => {
+// //         const file = e.target.files[0];
+// //         setGstFile(file);
+// //         setPreview(URL.createObjectURL(file)); // For local preview
+// //     };
+
+// //     const handleEditFileChange = (e) => {
+// //         const file = e.target.files[0];
+// //         setEditGstFile(file);
+// //         setEditPreview(URL.createObjectURL(file)); // For local preview
+// //     };
+
+// //     const handleSubmit = async () => {
+// //         if (!gstNumber) {
+// //             alert("Please provide GST number.");
+// //             return;
+// //         }
+// //         await dispatch(handleAddGstDetail({ gstNumber, certificate: gstFile }));
+// //         // After adding, refetch details automatically
+// //         dispatch(getUserDetails());
+// //     };
+
+// //     const handleUpdate = async () => {
+// //         await dispatch(handleUpdateGstDetail({
+// //             gstNumber: editGstNumber,
+// //             certificate: editGstFile,
+// //         }));
+// //         // After updating, refetch details automatically
+// //         dispatch(getUserDetails());
+// //         setShowPopup(false);
+// //     };
+
+// //     // Helper function to check if URL is complete or relative
+// //     const getImageUrl = (url) => {
+// //         if (url && !url.startsWith("http")) {
+// //             return `https://steel-junction.onrender.com/${url}`;
+// //         }
+
+// //         return url; // Return the full URL if it's already complete
+// //     };
+
+// //     return (
+// //         <div className="flex flex-col w-full max-w-6xl gap-4 mx-auto lg:flex-row">
+// //             <div className="flex-grow p-4 bg-white rounded-md border border-[#ddd]">
+// //                 <div className="px-4 py-2 text-lg font-semibold text-white bg-black rounded-t">
+// //                     GST Details
+// //                 </div>
+
+// //                 <div className="p-4 space-y-4">
+// //                     <div>
+// //                         <label className="block mb-1 text-sm font-medium">GSTIN Number*</label>
+// //                         <input
+// //                             type="text"
+// //                             value={gstNumber}
+// //                             onChange={(e) => setGstNumber(e.target.value)}
+// //                             placeholder="Enter GST Number"
+// //                             className="flex-grow w-full px-3 py-2 text-sm border border-gray-300 rounded"
+// //                         />
+// //                     </div>
+
+// //                     <div>
+// //                         <label className="block mb-1 text-sm font-medium">GST Certificate*</label>
+// //                         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+// //                             <input type="file" onChange={handleFileChange} className="text-sm" />
+// //                             <Button
+// //                                 onClick={handleSubmit}
+// //                                 className="px-4 py-1 text-sm text-red-700 bg-red-200 rounded hover:bg-red-300"
+// //                                 disabled={loading}
+// //                             >
+// //                                 {loading ? "Uploading..." : "Upload"}
+// //                             </Button>
+// //                         </div>
+
+// //                         {preview && (
+// //                             <div className="mt-2">
+// //                                 <img
+// //                                     src={getImageUrl(preview)}
+// //                                     alt="GST Certificate"
+// //                                     className="w-auto max-w-full border rounded h-28"
+// //                                 />
+// //                             </div>
+// //                         )}
+// //                     </div>
+
+// //                     <div className="flex gap-2 pt-2">
+// //                         <Button
+// //                             onClick={() => {
+// //                                 setEditGstNumber(gstNumber);
+// //                                 setEditPreview(preview);
+// //                                 setShowPopup(true);
+// //                             }}
+// //                             className="text-white bg-black hover:bg-gray-800"
+// //                         >
+// //                             Edit
+// //                         </Button>
+// //                     </div>
+// //                 </div>
+// //             </div>
+
+// //             {showPopup && (
+// //                 <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
+// //                     <div className="relative bg-white w-[90%] max-w-md rounded-md shadow-xl border border-gray-300 p-5">
+// //                         <button
+// //                             className="absolute text-gray-600 top-2 right-2 hover:text-black"
+// //                             onClick={() => setShowPopup(false)}
+// //                         >
+// //                             <X size={18} />
+// //                         </button>
+
+// //                         <h2 className="mb-4 text-lg font-semibold">Edit GST Details</h2>
+
+// //                         <div className="space-y-4">
+// //                             <div>
+// //                                 <label className="text-sm font-medium">GSTIN Number*</label>
+// //                                 <input
+// //                                     type="text"
+// //                                     value={editGstNumber}
+// //                                     onChange={(e) => setEditGstNumber(e.target.value)}
+// //                                     className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded"
+// //                                 />
+// //                             </div>
+
+// //                             <div>
+// //                                 <label className="text-sm font-medium">GST Certificate*</label>
+// //                                 <input type="file" onChange={handleEditFileChange} />
+// //                             </div>
+
+// //                             {editPreview && (
+// //                                 <div>
+// //                                     <img
+// //                                         src={getImageUrl(
+// //                                             typeof editPreview === "string" ? editPreview : ''
+// //                                         )}
+// //                                         alt="GST Preview"
+// //                                         className="max-w-full border rounded h-28"
+// //                                     />
+// //                                 </div>
+// //                             )}
+
+// //                             <Button
+// //                                 onClick={handleUpdate}
+// //                                 className="w-full text-white bg-black hover:bg-gray-800"
+// //                                 disabled={loading}
+// //                             >
+// //                                 {loading ? "Updating..." : "Update"}
+// //                             </Button>
+// //                         </div>
+// //                     </div>
+// //                 </div>
+// //             )}
+// //         </div>
+// //     );
+// // };
+
+// // export default GstDetails;
 
 // "use client";
 // import React, { useEffect, useState } from "react";
 // import { useDispatch, useSelector } from "react-redux";
-// import { handleAddGstDetail, handleUpdateGstDetail } from "@/redux/GstDetailSlice";
+// import {
+//   handleAddGstDetail,
+//   handleUpdateGstDetail,
+//   getUserDetails,
+// } from "@/redux/GstDetailSlice";
 // import { Button } from "@/components/ui/button";
 // import { X } from "lucide-react";
- 
+
 // const GstDetails = () => {
 //   const dispatch = useDispatch();
-//   const { loading } = useSelector((state) => state.gstDetail);
- 
+//   const { loading, gstDetails } = useSelector((state) => state.gstDetail);
+
 //   const [gstNumber, setGstNumber] = useState("");
 //   const [gstFile, setGstFile] = useState(null);
 //   const [preview, setPreview] = useState(null);
 //   const [showPopup, setShowPopup] = useState(false);
- 
-//   // Popup editable states
+
 //   const [editGstNumber, setEditGstNumber] = useState("");
 //   const [editGstFile, setEditGstFile] = useState(null);
 //   const [editPreview, setEditPreview] = useState(null);
 
 //   useEffect(() => {
-//     if (typeof window !== "undefined") {
-//       const storedGst = localStorage.getItem("gstDetails");
-//       if (storedGst && storedGst !== "undefined") {
-//         const gst = JSON.parse(storedGst);
-  
-//         // Set UI state
-//         setGstNumber(gst?.gstNumber || "");
-//         if (gst?.certificateUrl) {
-//           setPreview(gst.certificateUrl);
-//         }
-  
-//         // Dispatch it to redux if you want to sync state
-//         dispatch({
-//           type: "gst/setGstDetailsFromStorage",
-//           payload: gst
-//         });
-//       }
-//     }
-//   }, []);
-  
+//     dispatch(getUserDetails());
+//   }, [dispatch]);
 
-//   const handleFileChange = (e) => {
-//     const file = e.target.files[0];
-//     setGstFile(file);
-//     setPreview(URL.createObjectURL(file));
-//   };
- 
-//   const handleEditFileChange = (e) => {
-//     const file = e.target.files[0];
-//     setEditGstFile(file);
-//     setEditPreview(URL.createObjectURL(file));
-//   };
- 
-//   // const handleSubmit = async () => {
-//   //   if (!gstNumber || !gstFile) {
-//   //     alert("Please provide GST number and upload certificate file.");
-//   //     return;
-//   //   }
- 
-//   //   await dispatch(handleAddGstDetail({ gstNumber, certificate: gstFile }));
-//   //   setGstNumber("");
-//   //   setGstFile(null);
-//   //   setPreview(null);
+//   useEffect(() => {
+//     if (gstDetails) {
+//       setGstNumber(gstDetails.gstNumber || "");
+//       setPreview(gstDetails.certificateUrl || null);
+//       setEditGstNumber(gstDetails.gstNumber || "");
+//       setEditPreview(gstDetails.certificateUrl || null);
+//     }
+//   }, [gstDetails]);
+
+//   // const handleFileChange = (e) => {
+//   //     const file = e.target.files[0];
+//   //     setGstFile(file);
+//   //     setPreview(file ? URL.createObjectURL(file) : null);
+//   // };
+
+//   // const handleEditFileChange = (e) => {
+//   //     const file = e.target.files[0];
+//   //     setEditGstFile(file);
+//   //     setEditPreview(file ? URL.createObjectURL(file) : null);
 //   // };
 
 //   const handleSubmit = async () => {
-//     if (!gstNumber || !gstFile) {
-//       alert("Please provide GST number and upload certificate file.");
+//     if (!gstNumber) {
+//       alert("Please provide GST number.");
 //       return;
 //     }
-  
-//     const response = await dispatch(handleAddGstDetail({ gstNumber, certificate: gstFile }));
-  
-//     if (response?.payload?.gstDetails) {
-//       const { gstNumber, certificateUrl } = response.payload.gstDetails;
-  
-//       setGstNumber(gstNumber || "");
-//       setGstFile(null);
-//       setPreview(certificateUrl || "/path/to/default.jpg");
-  
-//       // Save to localStorage ✅
-//       localStorage.setItem(
-//         "gstDetails",
-//         JSON.stringify({ gstNumber, certificateUrl })
-//       );
-
-//       console.log("Saved GST:", localStorage.getItem("gstDetails"));
-
+//     if (!gstFile) {
+//       alert("Please upload GST certificate.");
+//       return;
 //     }
+//     await dispatch(handleAddGstDetail({ gstNumber, certificate: gstFile }));
+//     dispatch(getUserDetails());
+//     setGstNumber("");
+//     setGstFile(null);
+//     setPreview(null);
 //   };
-  
-  
- 
-//   const openEditPopup = () => {
-//     setEditGstNumber(gstNumber);
-//     setEditGstFile(gstFile);
-//     setEditPreview(preview);
-//     setShowPopup(true);
-//   };
- 
-//   // const handleUpdate = async () => {
-//   //   await dispatch(
-//   //     handleUpdateGstDetail({
-//   //       gstNumber: editGstNumber,
-//   //       certificate: editGstFile,
-//   //     })
-//   //   );
-//   //   setGstNumber(editGstNumber);
-//   //   setGstFile(editGstFile);
-//   //   setPreview(editPreview);
-//   //   setShowPopup(false);
-//   // };
 
 //   const handleUpdate = async () => {
-//     const response = await dispatch(
-//       handleUpdateGstDetail({
-//         gstNumber: editGstNumber,
-//         certificate: editGstFile,
-//       })
-//     );
-  
-//     if (response?.payload?.gstDetails) {
-//       const { gstNumber, certificateUrl } = response.payload.gstDetails;
-  
-//       setGstNumber(gstNumber || "");
-//       setGstFile(null);
-//       setPreview(certificateUrl || "/path/to/default.jpg");
-//       setShowPopup(false);
-  
-//       // Save updated data to localStorage ✅
-//       localStorage.setItem(
-//         "gstDetails",
-//         JSON.stringify({ gstNumber, certificateUrl })
-//       );
+//     const payload = {
+//       gstNumber: editGstNumber,
+//     };
+//     if (editGstFile) {
+//       payload.certificate = editGstFile;
 //     }
+//     await dispatch(handleUpdateGstDetail(payload));
+//     dispatch(getUserDetails());
+//     setShowPopup(false);
+//     setEditGstFile(null);
+//     setEditPreview(null);
 //   };
-  
- 
+
+//   const handleFileChange = (e) => {
+//     const file = e.target.files[0];
+//     if (
+//       file &&
+//       (file.size > 5 * 1024 * 1024 || // Same 5MB limit
+//         !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) // Added application/pdf for certificates
+//     ) {
+//       alert("Please upload a valid image (JPEG/PNG) or PDF under 5MB."); // Using alert for simplicity, you can use toast
+//       e.target.value = null; // Clear the file input
+//       setGstFile(null);
+//       setPreview(null);
+//       return;
+//     }
+//     setGstFile(file);
+//     setPreview(file ? URL.createObjectURL(file) : null);
+//   };
+
+//   const handleEditFileChange = (e) => {
+//     const file = e.target.files[0];
+//     if (
+//       file &&
+//       (file.size > 5 * 1024 * 1024 ||
+//         !["image/jpeg", "image/png", "application/pdf"].includes(file.type))
+//     ) {
+//       alert(
+//         "Please upload a valid image (JPEG/PNG) or PDF under 5MB for the updated certificate."
+//       );
+//       e.target.value = null; // Clear the file input
+//       setEditGstFile(null);
+//       setEditPreview(null);
+//       return;
+//     }
+//     setEditGstFile(file);
+//     setEditPreview(file ? URL.createObjectURL(file) : null);
+//   };
+
 //   return (
-//     <div className="flex flex-col w-[80%] gap-4 lg:flex-row">
-//       {/* GST Form */}
+//     <div className="flex flex-col w-full max-w-6xl gap-4 mx-auto lg:flex-row">
 //       <div className="flex-grow p-4 bg-white rounded-md border border-[#ddd]">
 //         <div className="px-4 py-2 text-lg font-semibold text-white bg-black rounded-t">
 //           GST Details
 //         </div>
- 
+
 //         <div className="p-4 space-y-4">
 //           <div>
-//             <label className="block mb-1 text-sm font-medium">GSTIN Number*</label>
+//             <label className="block mb-1 text-sm font-medium">
+//               GSTIN Number*
+//             </label>
 //             <input
 //               type="text"
 //               value={gstNumber}
@@ -342,102 +324,129 @@
 //               className="flex-grow w-full px-3 py-2 text-sm border border-gray-300 rounded"
 //             />
 //           </div>
- 
+
 //           <div>
-//             <label className="block mb-1 text-sm font-medium">GST Certificate*</label>
-//             <div className="flex items-center gap-4">
-//               <input type="file" onChange={handleFileChange} className="text-sm" />
+//             <label className="block mb-1 text-sm font-medium">
+//               GST Certificate*
+//             </label>
+//             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+//               <input
+//                 type="file"
+//                 onChange={handleFileChange}
+//                 className="text-sm"
+//               />
 //               <Button
 //                 onClick={handleSubmit}
 //                 className="px-4 py-1 text-sm text-red-700 bg-red-200 rounded hover:bg-red-300"
-//                 disabled={loading}
+//                 disabled={loading || !gstNumber || !gstFile}
 //               >
 //                 {loading ? "Uploading..." : "Upload"}
 //               </Button>
 //             </div>
- 
 //             {preview && (
 //               <div className="mt-2">
 //                 <img
-//                   src={preview}
+//                   src={
+//                     preview instanceof File
+//                       ? URL.createObjectURL(preview)
+//                       : preview
+//                       ? `https://steel-junction.onrender.com/${preview}`
+//                       : "/default-gst.png" // Fallback for no GST certificate
+//                   }
 //                   alt="GST Certificate"
-//                   className="w-auto border rounded h-28"
+//                   className="object-contain w-auto max-w-full border rounded h-28"
 //                 />
 //               </div>
 //             )}
 //           </div>
- 
+
 //           <div className="flex gap-2 pt-2">
 //             <Button
-//               onClick={openEditPopup}
+//               onClick={() => {
+//                 setEditGstNumber(gstNumber);
+//                 setEditPreview(preview);
+//                 setShowPopup(true);
+//               }}
 //               className="text-white bg-black hover:bg-gray-800"
+//               disabled={!gstDetails}
 //             >
-//               Update
+//               Edit
 //             </Button>
 //           </div>
 //         </div>
 //       </div>
- 
-//       {/* Edit Popup */}
+
 //       {showPopup && (
 //         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
-//           <div className="relative bg-white w-[400px] rounded-md shadow-xl border border-gray-300 p-5">
-//           <button
-//             className="absolute text-gray-600 top-2 right-2 hover:text-black"
-//             onClick={() => setShowPopup(false)}
-//           >
-//             <X size={18} />
-//           </button>
- 
-//           <h2 className="mb-4 text-lg font-semibold">Edit GST Details</h2>
- 
-//           <div className="space-y-4">
-//             <div>
-//               <label className="text-sm font-medium">GSTIN Number*</label>
-//               <input
-//                 type="text"
-//                 value={editGstNumber}
-//                 onChange={(e) => setEditGstNumber(e.target.value)}
-//                 className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded"
-//               />
-//             </div>
- 
-//             <div>
-//               <label className="text-sm font-medium">GST Certificate*</label>
-//               <input type="file" onChange={handleEditFileChange} />
-//             </div>
- 
-//             {editPreview && (
+//           <div className="relative bg-white w-[90%] max-w-md rounded-md shadow-xl border border-gray-300 p-5">
+//             <button
+//               className="absolute text-gray-600 top-2 right-2 hover:text-black"
+//               onClick={() => setShowPopup(false)}
+//             >
+//               <X size={18} />
+//             </button>
+
+//             <h2 className="mb-4 text-lg font-semibold">Edit GST Details</h2>
+
+//             <div className="space-y-4">
 //               <div>
-//                 <img
-//                   src={editPreview}
-//                   alt="GST Preview"
-//                   className="border rounded h-28"
+//                 <label className="text-sm font-medium">GSTIN Number*</label>
+//                 <input
+//                   type="text"
+//                   value={editGstNumber}
+//                   onChange={(e) => setEditGstNumber(e.target.value)}
+//                   className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded"
 //                 />
 //               </div>
-//             )}
- 
-//             <Button
-//               onClick={handleUpdate}
-//               className="w-full text-white bg-black hover:bg-gray-800"
-//               disabled={loading}
-//             >
-//               {loading ? "Updating..." : "Edit"}
-//             </Button>
+
+//               <div>
+//                 <label className="text-sm font-medium">
+//                   GST Certificate (Optional)
+//                 </label>
+//                 <input type="file" onChange={handleEditFileChange} />
+//               </div>
+
+//               {editPreview && (
+//                 <div>
+//                   <img
+//                     src={
+//                       editPreview instanceof File
+//                         ? URL.createObjectURL(editPreview)
+//                         : editPreview
+//                         ? `https://steel-junction.onrender.com/${editPreview}`
+//                         : "/default-gst.png" // Fallback for no GST certificate in edit
+//                     }
+//                     alt="GST Preview"
+//                     className="object-contain max-w-full border rounded h-28"
+//                   />
+//                 </div>
+//               )}
+
+//               <Button
+//                 onClick={handleUpdate}
+//                 className="w-full text-white bg-black hover:bg-gray-800"
+//                 disabled={loading || !editGstNumber}
+//               >
+//                 {loading ? "Updating..." : "Update"}
+//               </Button>
+//             </div>
 //           </div>
 //         </div>
-//       </div>
 //       )}
 //     </div>
 //   );
 // };
- 
+
 // export default GstDetails;
 
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { handleAddGstDetail, handleUpdateGstDetail, setGstDetailsFromStorage } from "@/redux/GstDetailSlice";
+import {
+  handleAddGstDetail,
+  handleUpdateGstDetail,
+  getUserDetails,
+} from "@/redux/GstDetailSlice";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
@@ -450,96 +459,96 @@ const GstDetails = () => {
   const [preview, setPreview] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
-  // Popup editable states
   const [editGstNumber, setEditGstNumber] = useState("");
   const [editGstFile, setEditGstFile] = useState(null);
   const [editPreview, setEditPreview] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedGst = localStorage.getItem("gstDetails");
-      if (storedGst && storedGst !== "undefined") {
-        const gst = JSON.parse(storedGst);
-        
-        // Sync with Redux
-        dispatch(setGstDetailsFromStorage(gst));
-
-        // Set UI state
-        setGstNumber(gst?.gstNumber || "");
-        if (gst?.certificateUrl) {
-          setPreview(gst.certificateUrl);
-        }
-      }
-    }
+    dispatch(getUserDetails());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (gstDetails) {
+      const certificateUrl = gstDetails.certificateUrl;
+
+      // Check if the certificate URL is valid
+      if (certificateUrl) {
+        // If valid, construct the full URL
+        const gstUrl = `https://steel-junction.onrender.com/uploads/${certificateUrl}`;
+        setPreview(gstUrl);
+        setEditPreview(gstUrl);
+        console.log("Preview URL being used:", gstUrl);
+      } else {
+        // If certificate URL is not available, set preview as null or fallback
+        setPreview(null);
+        setEditPreview(null);
+        console.log("No certificate URL available.");
+      }
+
+      // Set other fields
+      setGstNumber(gstDetails.gstNumber || "");
+      setEditGstNumber(gstDetails.gstNumber || "");
+    }
+  }, [gstDetails]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    if (
+      file &&
+      (file.size > 5 * 1024 * 1024 ||
+        !["image/jpeg", "image/png", "application/pdf"].includes(file.type))
+    ) {
+      alert("Upload JPEG, PNG, or PDF under 5MB.");
+      e.target.value = null;
+      setGstFile(null);
+      setPreview(null);
+      return;
+    }
     setGstFile(file);
     setPreview(URL.createObjectURL(file));
   };
 
   const handleEditFileChange = (e) => {
     const file = e.target.files[0];
+    if (
+      file &&
+      (file.size > 5 * 1024 * 1024 ||
+        !["image/jpeg", "image/png", "application/pdf"].includes(file.type))
+    ) {
+      alert("Upload JPEG, PNG, or PDF under 5MB.");
+      e.target.value = null;
+      setEditGstFile(null);
+      setEditPreview(null);
+      return;
+    }
     setEditGstFile(file);
     setEditPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async () => {
     if (!gstNumber || !gstFile) {
-      alert("Please provide GST number and upload certificate file.");
+      alert("Enter GST number and certificate.");
       return;
     }
-
-    const response = await dispatch(handleAddGstDetail({ gstNumber, certificate: gstFile }));
-
-    if (response?.payload?.gstDetails) {
-      const { gstNumber, certificateUrl } = response.payload.gstDetails;
-
-      setGstNumber(gstNumber || "");
-      setGstFile(null);
-      setPreview(certificateUrl || "/path/to/default.jpg");
-
-      // Save to localStorage ✅
-      localStorage.setItem("gstDetails", JSON.stringify({ gstNumber, certificateUrl }));
-      console.log("Saved GST:", localStorage.getItem("gstDetails"));
-    }
+    await dispatch(handleAddGstDetail({ gstNumber, certificate: gstFile }));
+    dispatch(getUserDetails());
+    setGstNumber("");
+    setGstFile(null);
+    setPreview(null);
   };
 
-  // const handleUpdate = async () => {
-  //   const response = await dispatch(handleUpdateGstDetail({ gstNumber: editGstNumber, certificate: editGstFile }));
-
-  //   if (response?.payload?.gstDetails) {
-  //     const { gstNumber, certificateUrl } = response.payload.gstDetails;
-
-  //     setGstNumber(gstNumber || "");
-  //     setGstFile(null);
-  //     setPreview(certificateUrl || "/path/to/default.jpg");
-  //     setShowPopup(false);
-
-  //     // Save updated data to localStorage ✅
-  //     localStorage.setItem("gstDetails", JSON.stringify({ gstNumber, certificateUrl }));
-  //   }
-  // };
-
   const handleUpdate = async () => {
-    // Dispatch update action with the updated GST details
-    await dispatch(
-      handleUpdateGstDetail({
-        gstNumber: editGstNumber,
-        certificate: editGstFile,
-      })
-    );
-    
-    // Update local state if needed or trigger a fetch from the state
-    setGstNumber(editGstNumber);
-    setPreview(editPreview);
+    const payload = { gstNumber: editGstNumber };
+    if (editGstFile) payload.certificate = editGstFile;
+    await dispatch(handleUpdateGstDetail(payload));
+    dispatch(getUserDetails());
     setShowPopup(false);
+    setEditGstFile(null);
+    setEditPreview(null);
   };
 
   return (
-    <div className="flex flex-col w-[80%] gap-4 lg:flex-row">
-      {/* GST Form */}
+    <div className="flex flex-col w-full max-w-6xl gap-4 mx-auto lg:flex-row">
       <div className="flex-grow p-4 bg-white rounded-md border border-[#ddd]">
         <div className="px-4 py-2 text-lg font-semibold text-white bg-black rounded-t">
           GST Details
@@ -547,55 +556,69 @@ const GstDetails = () => {
 
         <div className="p-4 space-y-4">
           <div>
-            <label className="block mb-1 text-sm font-medium">GSTIN Number*</label>
+            <label className="block mb-1 text-sm font-medium">
+              GSTIN Number*
+            </label>
             <input
               type="text"
               value={gstNumber}
               onChange={(e) => setGstNumber(e.target.value)}
               placeholder="Enter GST Number"
-              className="flex-grow w-full px-3 py-2 text-sm border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded"
             />
           </div>
 
           <div>
-            <label className="block mb-1 text-sm font-medium">GST Certificate*</label>
-            <div className="flex items-center gap-4">
-              <input type="file" onChange={handleFileChange} className="text-sm" />
+            <label className="block mb-1 text-sm font-medium">
+              GST Certificate*
+            </label>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="text-sm"
+              />
               <Button
                 onClick={handleSubmit}
                 className="px-4 py-1 text-sm text-red-700 bg-red-200 rounded hover:bg-red-300"
-                disabled={loading}
+                disabled={loading || !gstNumber || !gstFile}
               >
                 {loading ? "Uploading..." : "Upload"}
               </Button>
             </div>
 
-            {preview && (
+            {preview ? (
               <div className="mt-2">
                 <img
                   src={preview}
                   alt="GST Certificate"
-                  className="w-auto border rounded h-28"
+                  className="object-contain w-auto max-w-full border rounded h-28"
                 />
               </div>
+            ) : (
+              <p>No certificate available</p> // Display a message if no preview is available
             )}
           </div>
 
           <div className="flex gap-2 pt-2">
             <Button
-              onClick={() => setShowPopup(true)}
+              onClick={() => {
+                setEditGstNumber(gstNumber);
+                setEditPreview(preview);
+                setShowPopup(true);
+              }}
               className="text-white bg-black hover:bg-gray-800"
+              disabled={!gstDetails}
             >
-              Update
+              Edit
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Edit Popup */}
       {showPopup && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="relative bg-white w-[400px] rounded-md shadow-xl border border-gray-300 p-5">
+          <div className="relative bg-white w-[90%] max-w-md rounded-md shadow-xl border border-gray-300 p-5">
             <button
               className="absolute text-gray-600 top-2 right-2 hover:text-black"
               onClick={() => setShowPopup(false)}
@@ -617,26 +640,27 @@ const GstDetails = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium">GST Certificate*</label>
+                <label className="text-sm font-medium">
+                  GST Certificate (Optional)
+                </label>
                 <input type="file" onChange={handleEditFileChange} />
               </div>
 
               {editPreview && (
-                <div>
+                <div className="mt-2">
                   <img
                     src={editPreview}
-                    alt="GST Preview"
-                    className="border rounded h-28"
+                    alt="GST Certificate"
+                    className="object-contain w-auto max-w-full border rounded h-28"
                   />
                 </div>
               )}
 
               <Button
                 onClick={handleUpdate}
-                className="w-full text-white bg-black hover:bg-gray-800"
-                disabled={loading}
+                className="w-full py-2 text-sm text-white bg-black hover:bg-gray-800"
               >
-                {loading ? "Updating..." : "Edit"}
+                {loading ? "Updating..." : "Update"}
               </Button>
             </div>
           </div>

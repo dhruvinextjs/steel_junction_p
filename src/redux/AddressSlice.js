@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { PostUrl, GetUrl, PutUrl, DeleteUrl } from "@/app/api/BaseUrl";
 import { getToken } from "@/utils/auth";
 import toast from "react-hot-toast";
+import axios from 'axios';
+
  
 // ADD ADDRESS
 export const addAddress = createAsyncThunk(
@@ -120,54 +122,30 @@ export const deleteAddress = createAsyncThunk(
     }
   );
 
-// export const setDefaultAddress = createAsyncThunk(
-//   "address/setDefaultAddress",
-//   async ({ selectedId, allAddresses, token }, thunkAPI) => {
-//     try {
-//       // 1. Set all other addresses to isDefault: false
-//       for (let address of allAddresses) {
-//         if (address._id !== selectedId && address.isDefault) {
-//           await PutUrl(`/address/update/${address._id}`, {
-//             isDefault: false,
-//           }, {
-//             headers: { Authorization: `Bearer ${token}` },
-//           });
-//         }
-//       }
-
-//       // 2. Set selected address to isDefault: true
-//       const response = await PutUrl(`/address/update/${selectedId}`, {
-//         isDefault: true,
-//       }, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
-
-//       return response.data;
-//     } catch (error) {
-//       return thunkAPI.rejectWithValue(error?.response?.data?.message || "Failed to set default address");
-//     }
-//   }
-// );
-
-export const setDefaultAddress = createAsyncThunk(
-  "address/setDefaultAddress",
-  async ({ selectedId, token }, thunkAPI) => {
-    try {
-      const response = await PutUrl.put(`/user/default-address/${selectedId}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return {
-        defaultAddressId: selectedId,
-        message: response?.data?.message,
-      };
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error?.response?.data?.message || "Failed to set default address");
+  export const setDefaultAddress = createAsyncThunk(
+    "address/setDefault",
+    async (payload, { rejectWithValue }) => {
+      try {
+        const response = await axios.put(
+          `https://steel-junction.onrender.com/api/address/makeDefault/${payload.selectedId}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${payload.token}`,
+            },
+          }
+        );
+        return response.data;
+      } catch (error) {
+        console.error("❌ Error setting default address:", error);
+        return rejectWithValue(error.response.data);
+      }
     }
-  }
-);
+  );
+  
+  
+  
+
 // SLICE
 const addressSlice = createSlice({
   name: "address",
@@ -257,9 +235,7 @@ const addressSlice = createSlice({
         })
         .addCase(setDefaultAddress.fulfilled, (state, action) => {
           state.defaultAddressId = action.payload.defaultAddressId;
-          toast.success("Default address updated!");
         })
-        
         .addCase(setDefaultAddress.rejected, (state, action) => {
           state.loading = false;
           state.error = action.payload;

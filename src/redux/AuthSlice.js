@@ -174,75 +174,49 @@ export const handleCheckLoginPasscode = createAsyncThunk(
   }
 );
 
-// Edit Profile
 export const handleEditProfile = createAsyncThunk(
   "auth/handleEditProfile",
-  async ({ formData, token }, { rejectWithValue }) => {
-    console.log("Token passed to handleEditProfile:", token);
-
+  async ({ formData, token }, { dispatch, rejectWithValue }) => {
     try {
       if (!token) {
         toast.error("Authentication token is missing.");
         return rejectWithValue("Token missing");
       }
 
-      // Set the token on the instance
+      // ✅ Ensure businessName is not missing
+      if (!formData.has("businessName") || !formData.get("businessName")) {
+        toast.error("Firm Name is required.");
+        return rejectWithValue("Business Name missing");
+      }
+
+      // Set headers
       PutUrl.defaults.headers["Authorization"] = `Bearer ${token}`;
       PutUrl.defaults.headers["Content-Type"] = "multipart/form-data";
 
       const { data } = await PutUrl("/auth/editProfile", formData);
 
-      toast.success("Profile updated successfully!");
+      // ✅ Only show success if API returns success
+      if (data.success) {
+        toast.success(data.message || "Profile updated successfully!");
+        await dispatch(fetchProfileDetails());
+      } else {
+        toast.error(data.message || "Profile update failed!");
+        return rejectWithValue(data.message || "Unknown error");
+      }
+
       return data;
     } catch (error) {
-      console.error("Error during profile update:", error);
-
       const errorMessage = error?.response?.data?.message || "Profile update failed!";
       toast.error(errorMessage);
-
       return rejectWithValue(errorMessage);
     }
   }
 );
 
 
-// export const handleSendEnquiry = createAsyncThunk(
-//   "auth/handleSendEnquiry",
-//   async ({ name, email, contactNo, enquiry, image }, { rejectWithValue }) => {
-//     const token = getToken();
-//     if (!token) return rejectWithValue("Authentication token not found.");
-//     const formData = new FormData();
-//     // formData.append("productId", productId);
-//     formData.append("name", name);
-//     formData.append("email", email);
-//     formData.append("contactNo", contactNo);
-//     formData.append("enquiry", enquiry);
-//     if (image) formData.append("image", image); // Add image if present
-
-//     try {
-//       const { data } = await PostUrl("/order/sendEnquiry", {
-//         method: "POST",
-//         data: formData,
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-//       toast.success(data.message || "Enquiry sent successfully!");
-//       console.log(data, "enquiry");
-//       persistToLocalStorage("token", data.token);
-//       return data;
-//     } catch (error) {
-//        console.log("Error details:", error); 
-//       toast.error(error?.response?.data?.message || "Failed to send enquiry.");
-//       return rejectWithValue(error?.response?.data);
-//     }
-//   }
-// );
-
 export const handleSendEnquiry = createAsyncThunk(
   "auth/handleSendEnquiry",
-  async ({ formData, token }, { rejectWithValue }) => {
+  async ({ formData, token }, { dispatch, rejectWithValue }) => { // Access dispatch
     try {
       const response = await PostUrl.post("/order/sendEnquiry", formData, {
         headers: {
@@ -250,6 +224,17 @@ export const handleSendEnquiry = createAsyncThunk(
         },
       });
       toast.success("Enquiry sent successfully!");
+
+      // Assuming the backend returns the newly sent message in the response
+      if (response.data && response.data.newMessage) {
+        dispatch(
+          addMessage({
+            chatId: formData.get("productId"), // Or the relevant enquiryId
+            newMsg: response.data.newMessage,
+          })
+        );
+      }
+
       return response.data;
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to send enquiry");
@@ -356,8 +341,10 @@ const AuthSlice = createSlice({
     setCredentials: (state, action) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.role = action.payload.role;
       localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("token", action.payload.token);
+      localStorage.setItem('role', role); 
     },
   },
   extraReducers: (builder) => {
@@ -514,15 +501,16 @@ const AuthSlice = createSlice({
       state.error = action.payload || "Profile update failed";
     });
     // Extra Reducer for Enquiry API
-    builder.addCase(handleSendEnquiry.pending, (state) => {
+    builder
+    .addCase(handleSendEnquiry.pending, (state) => {
       state.loading = true;
       state.error = null;
-    });
-    builder.addCase(handleSendEnquiry.fulfilled, (state) => {
+    })
+    .addCase(handleSendEnquiry.fulfilled, (state) => {
       state.loading = false;
       state.error = null;
-    });
-    builder.addCase(handleSendEnquiry.rejected, (state, { payload }) => {
+    })
+    .addCase(handleSendEnquiry.rejected, (state, { payload }) => {
       state.loading = false;
       state.error = payload;
     });

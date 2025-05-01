@@ -212,6 +212,7 @@ const Addresses = () => {
 
   const [editNewAddress, setEditNewAddress] = useState(false);
   const [editAddress, setEditAddress] = useState(false);
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [currentEditData, setCurrentEditData] = useState(null);
 
@@ -227,17 +228,24 @@ const Addresses = () => {
     dispatch(deleteAddress({ id, token }));
   };
 
-  const handleSetDefault = (id) => {
-    setSelectedAddress(id);
-    dispatch(setDefaultAddress({ selectedId: id, token }));
-  };
+  // const handleSetDefault = (id) => {
+  //   setSelectedAddress(id);
+  //   dispatch(setDefaultAddress({ selectedId: id, token }));
+  // };
+
+    const handleSetDefault = async (id) => {
+      setSelectedAddressId(id); // Update local UI immediately
+      await dispatch(setDefaultAddress({ selectedId: id, allAddresses: addresses, token }));
+      dispatch(getAddressList()); // Refresh updated list if needed
+    };
+    
 
   return (
     <div className="flex-grow p-3 bg-white rounded-md xl:p-5">
       <p className="text-xl text-[#25324B] font-semibold mb-4">Addresses</p>
       <div className="space-y-3">
         {Array.isArray(addresses) && addresses.length > 0 ? (
-          <RadioGroup value={selectedAddress}   onValueChange={(id) => handleSetDefault(id)}>
+          <RadioGroup value={selectedAddress}  onValueChange={(addressId) => handleSetDefault(addressId)}>
             {addresses.map((address) => (
               <div
                 key={address._id}
@@ -308,7 +316,7 @@ const Addresses = () => {
             close={() => setEditNewAddress(false)}
             className="sm:max-w-[450px]"
           >
-            <DialogTitle>Add New Address</DialogTitle>
+            <DialogTitle>Add Address</DialogTitle>
             {/* <DialogDescription>
               Enter your full address and contact details.
             </DialogDescription> */}

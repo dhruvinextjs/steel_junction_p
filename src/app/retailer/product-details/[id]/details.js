@@ -83,9 +83,7 @@ const DetailsPage = () => {
               <Picture
                 width={500}
                 height={500}
-                src={`https://steel-junction.onrender.com/uploads/${
-                  selectedImage || "image"
-                }`}
+                src={`https://steel-junction.onrender.com/uploads/${selectedImage || images[0]}`}
                 alt="Selected"
                 className="object-cover"
               />

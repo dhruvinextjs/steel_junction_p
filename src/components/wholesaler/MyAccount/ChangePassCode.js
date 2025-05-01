@@ -81,6 +81,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { handleChangePasscode } from "@/redux/AuthSlice";
+import { toast } from "react-hot-toast";
 
 const ChangePassCode = () => {
   const dispatch = useDispatch();
@@ -91,9 +92,21 @@ const ChangePassCode = () => {
   const [confirmPasscode, setConfirmPasscode] = React.useState("");
 
   const handleSubmit = () => {
-    if (newPasscode !== confirmPasscode) {
-      return alert("New and Confirm passcodes must match.");
+    if (!currentPasscode || !newPasscode || !confirmPasscode) {
+      toast.error("Please fill in all passcode fields.");
+      return;
     }
+  
+    if (newPasscode !== confirmPasscode) {
+      toast.error("New and Confirm passcodes must match.");
+      return;
+    }
+  
+    if (currentPasscode === newPasscode) {
+      toast.error("Please choose a unique new passcode.");
+      return;
+    }
+  
     dispatch(handleChangePasscode({ currentPasscode, newPasscode }));
   };
 
