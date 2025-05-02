@@ -161,7 +161,7 @@ const CartPage = () => {
                                 -
                               </button>
                               <input
-                                type="number"
+                                type="text"
                                 value={editableQty[variant.variantId] ?? variant.qty}
                                 onChange={(e) =>
                                   handleInputChange(

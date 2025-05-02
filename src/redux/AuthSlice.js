@@ -287,13 +287,63 @@ export const handleResetPasscode = createAsyncThunk(
 );
 
 
+export const checkCurrentPasscode = createAsyncThunk(
+  'auth/checkCurrentPasscode',
+  async (passcode, { rejectWithValue }) => {
+    const token = localStorage.getItem('token');  // Replace with your token retrieval method
+    if (!token) return rejectWithValue("Authentication token not found");
+
+    try {
+      const response = await PostUrl.post(
+        '/auth/checkCurrentPasscode',
+        { passcode },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        return response.data;
+      } else {
+        return rejectWithValue("Incorrect passcode");
+      }
+    } catch (error) {
+      return rejectWithValue(
+        error?.response?.data?.message || "Error verifying passcode"
+      );
+    }
+  }
+);
+
 export const handleChangePasscode = createAsyncThunk(
   "auth/handleChangePasscode",
-  async ({ currentPasscode, newPasscode }, { rejectWithValue }) => {
+  async ({ currentPasscode, newPasscode }, { dispatch, rejectWithValue }) => {
     const token = getToken();
     if (!token) return rejectWithValue("Authentication token not found.");
 
     try {
+      // Verify the current passcode
+      const verifyRes = await PostUrl.post(
+        "/auth/checkCurrentPasscode",
+        { passcode: currentPasscode },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Ensure that the response contains `success` or valid status
+      if (!verifyRes.data.success) {
+        toast.error("Incorrect current passcode.");
+        return rejectWithValue("Incorrect current passcode.");
+      }
+
+      // Proceed to change the passcode
       const formData = new FormData();
       formData.append("currentPasscode", currentPasscode);
       formData.append("newPasscode", newPasscode);
@@ -308,10 +358,10 @@ export const handleChangePasscode = createAsyncThunk(
       toast.success("Passcode changed successfully!");
       return data;
     } catch (error) {
-      toast.error(
-        error?.response?.data?.message || "Failed to change passcode"
-      );
-      return rejectWithValue(error?.response?.data);
+      const errorMessage =
+        error?.response?.data?.message || "Failed to change passcode";
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -361,6 +411,18 @@ const AuthSlice = createSlice({
       state.loading = false;
       state.error = payload;
     });
+    builder.addCase(checkCurrentPasscode.fulfilled, (state, action) => {
+      // If current passcode is verified
+      toast.success("Current passcode verified.");
+      state.loading = false;
+    })
+    .addCase(checkCurrentPasscode.rejected, (state, action) => {
+      // If passcode is incorrect, display error
+      state.loading = false;
+      state.error = action.payload;
+      toast.error(action.payload || "Failed to verify current passcode.");
+    });
+    
 
     // Handle Reset Passcode
     builder.addCase(handleResetPasscode.pending, (state) => {
@@ -518,6 +580,6 @@ const AuthSlice = createSlice({
   },
 });
 
-export const { handleLogout,setCredentials } = AuthSlice.actions;
+export const { handleLogout,setCredentials  } = AuthSlice.actions;
 
 export default AuthSlice.reducer;

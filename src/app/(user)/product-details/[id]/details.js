@@ -457,6 +457,7 @@ import { handleGetProductById } from "@/redux/ProductSlice";
 import { handleAddToCart } from "@/redux/CartSlice";
 import toast from "react-hot-toast";
 import { handleAddFavRemove, handleGetFavs } from "@/redux/FavouriteSlice"; // Import your action
+import TrendingProduct from "@/components/wholesaler/home/TrendingProduct";
 
 const Details = () => {
   const { id } = useParams();
@@ -910,6 +911,7 @@ const Details = () => {
           </div>
         </div>
       </div>
+      <TrendingProduct/>
     </div>
   );
 };

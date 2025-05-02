@@ -113,7 +113,6 @@ const Header = () => {
       }
     }
   }, [role, setRole]);
-  
 
   useEffect(() => {
     window.addEventListener("scroll", () => {

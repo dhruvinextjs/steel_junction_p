@@ -75,7 +75,7 @@ const FaqList = () => {
               >
                 <button
                   onClick={() => toggleAccordion(index)}
-                  className="flex items-center justify-between w-full p-4 text-base font-semibold text-left text-gray-800 hover:bg-gray-200 focus:outline-none"
+                  className="flex items-center justify-between w-full p-4 text-base font-semibold text-left text-gray-800 focus:outline-none"
                 >
                   {faq.question}
                   {activeIndex === index ? (
