@@ -51,6 +51,7 @@ const enquirySlice = createSlice({
     clearEnquiries: (state) => {
       state.enquiries = [];
     },
+    
   },
   extraReducers: (builder) => {
     builder

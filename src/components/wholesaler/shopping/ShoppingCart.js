@@ -3,27 +3,28 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCartItems, updateCartQuantity } from "@/redux/CartSlice";
-import { fetchOrderSummary } from "@/redux/OrderSlice"; // Import fetchOrderSummary
+import { fetchOrderSummary } from "@/redux/OrderSlice";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 const CartPage = () => {
   const dispatch = useDispatch();
   const { cart, isLoading } = useSelector((state) => state.getCart);
-  const { totalQty, subTotal, gstAmount, loadingCharge, insurance, tcsAmount, orderTotal, roundOff, grossTotal, loading } = useSelector((state) => state.order); // Order summary from Redux
+  const { totalQty, subTotal, gstAmount, loadingCharge, insurance, tcsAmount, orderTotal, roundOff, grossTotal, loading } = useSelector((state) => state.order);
   const [editableQty, setEditableQty] = useState({});
+  const [isUpdating, setIsUpdating] = useState({}); // Track updates for each product/variant
   const router = useRouter();
-  
+
   const formatNumber = (number) => {
     return number !== undefined && number !== null ? number.toFixed(1) : "0.0";
   };
-  
 
-  // Fetch cart items and order summary on component mount
   useEffect(() => {
-    dispatch(fetchCartItems()); // Fetch cart items
-    dispatch(fetchOrderSummary()); // Fetch order summary
-  }, [dispatch]);
+    if (cart && cart.length === 0) {
+      dispatch(fetchCartItems());
+    }
+    dispatch(fetchOrderSummary());
+  }, [dispatch, cart]);
 
   const cartItems = Array.isArray(cart) ? cart : [];
 
@@ -32,69 +33,84 @@ const CartPage = () => {
   };
 
   const handleQuantityChange = async (productId, variantId, newQty) => {
-    if (newQty <= 0) return;
-  
-    // Update locally first for immediate UI feedback
-    setEditableQty(prev => ({
+    if (newQty < 0) return; // Prevent negative quantities
+    newQty = parseFloat(newQty.toFixed(1)); // Round to 1 decimal place
+
+    setIsUpdating((prev) => ({
+      ...prev,
+      [variantId]: true, // Set the updating state to true for this variant
+    }));
+
+    // Optimistic UI Update: Immediately reflect the new quantity in the UI
+    setEditableQty((prev) => ({
       ...prev,
       [variantId]: newQty,
     }));
-  
+
     const cartItem = cart.find((item) => item.productId === productId);
     if (!cartItem) return;
-  
+
     const updatedVariants = cartItem.variants.map((variant) => {
       if (variant.variantId === variantId) {
         return { ...variant, qty: newQty };
       }
       return variant;
     });
-  
-    const result = await dispatch(
-      updateCartQuantity({ productId, variants: updatedVariants })
-    );
-  
-    // If update fails, revert the local update and show an error
-    if (!updateCartQuantity.fulfilled.match(result)) {
-      setEditableQty(prev => ({
+
+    try {
+      // Call API to update the quantity in the cart
+      const result = await dispatch(updateCartQuantity({ productId, variants: updatedVariants }));
+
+      if (!updateCartQuantity.fulfilled.match(result)) {
+        throw new Error("Failed to update quantity");
+      }
+
+      // Re-fetch the updated cart and order summary after successful update
+      dispatch(fetchCartItems());
+      dispatch(fetchOrderSummary());
+    } catch (error) {
+      // Rollback optimistic update if API fails
+      setEditableQty((prev) => ({
         ...prev,
-        [variantId]: cartItem.variants.find(variant => variant.variantId === variantId)?.qty || 0
+        [variantId]: cartItem.variants.find((variant) => variant.variantId === variantId)?.qty || 0,
       }));
       toast.error("Failed to update quantity");
-    } else {
-      // Re-sync cart and order summary after a successful update
-      dispatch(fetchCartItems()); // Re-fetch cart items
-      dispatch(fetchOrderSummary()); // Re-fetch order summary
+    } finally {
+      setIsUpdating((prev) => ({
+        ...prev,
+        [variantId]: false, // Reset the updating state once done
+      }));
     }
   };
-  
-  
 
   const handleProceedToBuy = () => {
     if (totalQty < 25) {
       toast.warning("Minimum order quantity is 25 MT.");
       return;
     }
-
+  
     const orderDetails = {
       cartItems,
       subtotal: subTotal,
       totalQty,
     };
-
+  
     localStorage.setItem("orderDetails", JSON.stringify(orderDetails));
     toast.success("Order ready to proceed");
-
+  
     router.push("/OrderSummary");
   };
-
   const handleInputChange = (e, productId, variantId) => {
     const value = parseInt(e.target.value);
     if (isNaN(value) || value <= 0) return;
-  
+
     handleQuantityChange(productId, variantId, value);
   };
-  
+
+  const calculateAmount = (price, qty) => {
+    // Calculate the amount by multiplying price and quantity
+    return (price * qty).toFixed(2);
+  };
 
   return (
     <div className="w-full space-y-5 md:space-y-10">
@@ -107,97 +123,91 @@ const CartPage = () => {
         </h1>
       </div>
 
-      <div className="container flex flex-col items-start w-full h-full gap-5 mx-auto xl:flex-row">
+      <div className="container flex flex-col gap-5 px-4 mx-auto md:px-6 xl:flex-row">
         {/* LEFT COLUMN */}
         <div className="w-full h-full bg-white border xl:w-9/12">
-          {isLoading ? (
-            <p className="p-4">Loading...</p>
-          ) : cartItems.length === 0 ? (
-            <p className="p-4 text-gray-600">Your cart is empty.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[768px] text-sm">
-                <thead className="text-white bg-black">
-                  <tr>
-                    <th className="p-3 text-left">Product</th>
-                    <th className="p-3 text-center">Rate PMT</th>
-                    <th className="p-3 text-center">Quantity</th>
-                    <th className="p-3 text-center">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cartItems.map((item) => (
-                    <React.Fragment key={item.productId}>
-                      <tr className="bg-gray-100">
-                        <td colSpan="4" className="p-3 font-semibold">
-                          {item.productName}
+        <div className="w-full overflow-x-auto">
+        <table className="min-w-[700px] w-full text-sm">
+              <thead className="text-white bg-black">
+                <tr>
+                  <th className="w-2/5 p-3 text-left">Product</th>
+                  <th className="w-1/5 p-3 text-center">Rate PMT</th>
+                  <th className="w-1/5 p-3 text-center">Quantity</th>
+                  <th className="w-1/5 p-3 text-center">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cartItems.map((item) => (
+                  <React.Fragment key={item.productId}>
+                    <tr className="bg-gray-100">
+                      <td colSpan="4" className="p-3 font-semibold">
+                        {item.productName}
+                      </td>
+                    </tr>
+                    {item.variants?.map((variant) => (
+                      <tr
+                        key={variant.variantId}
+                        className="border-b border-gray-200 bg-[#F3F6FA]"
+                      >
+                        <td className="p-3">
+                          <p>Section: {variant.section}</p>
+                          <p>Length: {variant.length}</p>
+                          <p>Gauge Diff: {variant.gDiff}</p>
+                        </td>
+                        <td className="p-3 text-center">
+                          ₹ {formatPrice(variant.price)}
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="inline-flex items-center border border-gray-300 rounded">
+                            <button
+                              className="px-2 py-1 hover:bg-gray-200"
+                              onClick={() =>
+                                handleQuantityChange(
+                                  item.productId,
+                                  variant.variantId,
+                                  variant.qty - 0.1 // Decrement by 0.1
+                                )
+                              }
+                              disabled={isUpdating[variant.variantId]} // Disable the button if updating
+                            >
+                              -
+                            </button>
+                            <input
+                              type="text"
+                              step="0.1"
+                              value={editableQty[variant.variantId] ?? variant.qty}
+                              onChange={(e) =>
+                                handleInputChange(e, item.productId, variant.variantId)
+                              }
+                              min="0.1"
+                              className="w-16 text-center border-0 focus:outline-none"
+                              disabled={isUpdating[variant.variantId]} // Disable input during update
+                            />
+                            <button
+                              className="px-2 py-1 hover:bg-gray-200"
+                              onClick={() =>
+                                handleQuantityChange(
+                                  item.productId,
+                                  variant.variantId,
+                                  variant.qty + 0.1 // Increment by 0.1
+                                )
+                              }
+                              disabled={isUpdating[variant.variantId]} // Disable the button if updating
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3 font-medium text-center">
+                          ₹ {formatPrice(calculateAmount(variant.price, variant.qty))}
                         </td>
                       </tr>
-                      {item.variants?.map((variant) => (
-                        <tr
-                          key={variant.variantId}
-                          className="border-b border-gray-200 bg-[#F3F6FA]"
-                        >
-                          <td className="p-3">
-                            <p>Section: {variant.section}</p>
-                            <p>Length: {variant.length}</p>
-                            <p>Gauge Diff: {variant.gDiff}</p>
-                          </td>
-                          <td className="p-3 text-center">
-                            ₹ {formatPrice(variant.price)}
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="inline-flex items-center border border-gray-300 rounded">
-                              <button
-                                className="px-2 py-1 hover:bg-gray-200"
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.productId,
-                                    variant.variantId,
-                                    variant.qty - 1
-                                  )
-                                }
-                              >
-                                -
-                              </button>
-                              <input
-                                type="text"
-                                value={editableQty[variant.variantId] ?? variant.qty}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e,
-                                    item.productId,
-                                    variant.variantId
-                                  )
-                                }
-                                min="1"
-                                className="w-16 text-center border-0 focus:outline-none"
-                              />
-                              <button
-                                className="px-2 py-1 hover:bg-gray-200"
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.productId,
-                                    variant.variantId,
-                                    variant.qty + 1
-                                  )
-                                }
-                              >
-                                +
-                              </button>
-                            </div>
-                          </td>
-                          <td className="p-3 font-medium text-center">
-                            ₹ {formatPrice(variant.price * variant.qty)}
-                          </td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* RIGHT COLUMN */}
@@ -219,30 +229,29 @@ const CartPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <span>Subtotal</span>
-              <span>₹ {formatPrice(subTotal)}</span>
+              <span className="text-right min-w-[180px]">{formatPrice(subTotal)}</span> {/* Fixed width */}
             </div>
             {subTotal > 0 && (
               <>
                 <div className="flex justify-between text-sm">
                   <span>GST (18%)</span>
-                  <span>₹ {formatPrice(gstAmount)}</span>
-                </div>
-                <div className="flex justify-between text-sm font-bold">
-                  <span>Order Total</span>
-                  <span>₹ {formatPrice(orderTotal)}</span>
+                  <span className="text-right min-w-[150px]">{formatPrice(gstAmount)}</span>
                 </div>
               </>
             )}
+            <div className="flex justify-between text-sm font-semibold text-black">
+              <span>Order Total</span>
+              <span className="text-right">{formatPrice(grossTotal)}</span>
+            </div>
             <button
-              className={`w-full mt-5 px-4 py-2 text-white rounded ${
-                totalQty >= 25
+                 className={`w-full mt-5 px-4 py-2 text-white rounded ${totalQty >= 25
                   ? "bg-black hover:bg-gray-800"
                   : "bg-gray-400 cursor-not-allowed"
-              }`}
+                }`}
               onClick={handleProceedToBuy}
-              disabled={totalQty < 25}
+              disabled={totalQty < 25 || loading} // Disable if totalQty < 25 or loading
             >
-              Proceed to Buy
+              {loading ? "Proceed to Buy" : "Proceed to Buy"}
             </button>
           </div>
         </div>

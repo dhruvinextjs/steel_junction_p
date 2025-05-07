@@ -636,7 +636,7 @@ const GstDetails = () => {
                   value={editGstNumber}
                   onChange={(e) => setEditGstNumber(e.target.value)}
                   className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded"
-                />
+                />        
               </div>
 
               <div>

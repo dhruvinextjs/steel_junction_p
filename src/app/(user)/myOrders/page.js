@@ -5,40 +5,50 @@ import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { fetchOrders } from "@/redux/MyOrderSlice";
-
+ 
 const MyOrders = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const orderCardRefs = useRef([]);
-
+ 
   const {
     orders = [],
     loading = false,
     error = null,
   } = useSelector((state) => state.myOrders || {}, shallowEqual);
-
+ 
   useEffect(() => {
     dispatch(fetchOrders());
   }, [dispatch]);
-
+ 
   return (
     <div className="flex flex-col min-h-screen p-2 bg-gray-50 md:flex-row md:p-4">
       {/* Orders Section */}
       <div className="w-full bg-white rounded-md">
-        <div className="px-4 py-2 text-xl font-semibold text-black border-b">
-          My Orders
+        {/* Back Button + Heading */}
+        <div className="flex items-center gap-3 px-4 py-2 border-b">
+          {/* Back Button */}
+          <div
+            onClick={() => router.push("/wholesaler")}
+            className="p-2 text-lg text-black rounded-full cursor-pointer hover:bg-gray-200"
+          >
+            <i className="fa-solid fa-arrow-left"></i>
+          </div>
+ 
+          {/* Heading */}
+          <div className="text-xl font-semibold text-black">My Orders</div>
         </div>
-
+ 
         {loading && (
           <div className="p-4 text-sm text-center text-gray-600">
             Loading orders...
           </div>
         )}
-
+ 
         {error && (
           <div className="p-4 text-sm text-center text-red-500">{error}</div>
         )}
-
+ 
         {!loading && !error && (
           <div className="p-4 space-y-4">
             {orders.length === 0 ? (
@@ -71,7 +81,7 @@ const MyOrders = () => {
                       </p>
                     </div>
                     <div className="h-[1px] bg-gray-200" />
-
+ 
                     {/* Product List */}
                     <div className="space-y-2">
                       {Array.isArray(order.product) &&
@@ -82,7 +92,7 @@ const MyOrders = () => {
                           if (typeof firstImage === "string" && firstImage) {
                             imageSrc = `https://steel-junction.onrender.com/uploads/${firstImage}`;
                           }
-
+ 
                           return prod.variants.map((variant, k) => (
                             <div
                               key={`${j}-${k}`}
@@ -105,9 +115,9 @@ const MyOrders = () => {
                           ));
                         })}
                     </div>
-
+ 
                     <div className="h-[1px] bg-gray-200" />
-
+ 
                     {/* Order Footer */}
                     <div className="flex flex-wrap justify-between gap-2 text-sm font-medium">
                       <span>Total Amount: ₹ {order.grossTotal}</span>
@@ -120,7 +130,7 @@ const MyOrders = () => {
                       </span>
                     </div>
                   </div>
-
+ 
                   {/* Arrow Button */}
                   <div
                     onClick={() => router.push(`/order-details/${order._id}`)}
@@ -137,6 +147,6 @@ const MyOrders = () => {
     </div>
   );
 };
-
+ 
 export default MyOrders;
-
+ 

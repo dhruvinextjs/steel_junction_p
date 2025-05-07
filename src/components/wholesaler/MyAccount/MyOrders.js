@@ -25,6 +25,7 @@ const MyOrders = () => {
     <div className="flex flex-col min-h-screen p-2 bg-gray-50 md:flex-row md:p-4">
       {/* Orders Section */}
       <div className="w-full bg-white rounded-md">
+
         <div className="px-4 py-2 text-xl font-semibold text-black border-b">
           My Orders
         </div>

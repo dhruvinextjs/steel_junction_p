@@ -25,35 +25,30 @@
 //     socket = null;
 //   }
 // };
-
+// utils/socket.js
+// utils/socket.js
 import { io } from "socket.io-client";
 
 let socket;
 
-// Use the full backend URL that handles WebSocket connections
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "https://steel-junction.onrender.com";
 
 export const initiateSocket = () => {
   if (!socket) {
     socket = io(SOCKET_URL, {
-      transports: ["websocket"], // force websocket (optional)
-      withCredentials: true,     // if cookies/session are used
+      transports: ["polling"], // fallback to polling
+      withCredentials: true,
     });
-    console.log("Socket connected to", SOCKET_URL);
+    console.log("✅ Socket initialized using polling:", SOCKET_URL);
   }
 };
 
-export const getSocket = () => {
-  if (!socket) {
-    console.warn("Socket not initiated yet!");
-  }
-  return socket;
-};
+export const getSocket = () => socket;
 
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
-    console.log("Socket disconnected");
+    console.log("❌ Socket disconnected");
     socket = null;
   }
 };

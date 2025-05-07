@@ -633,24 +633,38 @@ export const updateCartQuantity = createAsyncThunk(
 );
  
 // 4. Remove Cart Item
+// 3. Remove Cart Item
 export const removeCartItem = createAsyncThunk(
   "cart/removeCartItem",
-  async ({ cartItemId }, { rejectWithValue }) => {
+  async ({ productId, variantId }, { rejectWithValue }) => {
     try {
-      await DeleteUrl.delete(`/cart/${cartItemId}`, {
+      const token = localStorage.getItem("token");
+
+      // ✅ Define formData properly before sending
+      const formData = new FormData();
+      formData.append("productId", productId);
+      formData.append("variantId", variantId);
+
+      // 🧾 Assuming the API expects a POST request for removal
+      const response = await PostUrl.post("/cart", formData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
- 
-      toast.success("Item removed from cart");
-      return cartItemId;
+
+      if (response.data.success) {
+        return { productId, variantId };
+      } else {
+        return rejectWithValue(response.data?.message || "Remove failed");
+      }
     } catch (error) {
-      toast.error("Failed to remove item.");
-      return rejectWithValue(error.response?.data?.message || "Something went wrong");
+      return rejectWithValue(error.response?.data?.message || "Remove failed");
     }
   }
 );
+
+
  
 // 🧠 Cart Slice
 const cartSlice = createSlice({
@@ -775,9 +789,20 @@ const cartSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.cart = state.cart.filter((item) => item._id !== action.payload);
-      })
+        const { productId, variantId } = action.payload;
+      
+        const product = state.cart.find((p) => p.productId === productId);
+        if (product) {
+          product.variants = product.variants.filter(
+            (variant) => variant.variantId !== variantId
+          );
+      
+          // Remove the product if all its variants are gone
+          if (product.variants.length === 0) {
+            state.cart = state.cart.filter((p) => p.productId !== productId);
+          }
+        }
+      })      
       .addCase(removeCartItem.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;

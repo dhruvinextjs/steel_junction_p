@@ -70,8 +70,6 @@ const Header = () => {
 
   const { user } = useSelector((state) => state.auth);
 
-  
-
   const debouncedSearch = useCallback(
     debounce((value) => {
       if (value.trim().length > 0) {
@@ -133,6 +131,10 @@ const Header = () => {
 
   const confirmLogout = () => {
     toast.loading("Logout...");
+    localStorage.removeItem("selectedRole");
+    localStorage.setItem("selectedRole", "wholesaler");
+    
+    setRole("wholesaler");
     setTimeout(() => {
       dispatch(handleLogout());
       router.push("/");
@@ -203,24 +205,29 @@ const Header = () => {
         </div>
 
         <div className="px-10 space-y-3 text-left">
-          <hr />
           <div>
-            <Sheet>
-              <SheetTrigger asChild>
-                <div
-                  className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => setOpenSidebar(false)}
-                >
-                  <IoChatboxEllipsesOutline className="text-xl text-[#5E5E6D]" />
-                  <p>Chat</p>
-                </div>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader className="flex items-center justify-center py-6 text-white bg-primary_color">
-                  <SheetTitle>Chats</SheetTitle>
-                </SheetHeader>
-              </SheetContent>
-            </Sheet>
+            {role === "retailer" ? (
+              <>
+                <hr />
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <div
+                      className="flex items-center gap-2 mt-2 cursor-pointer"
+                      onClick={() => setOpenSidebar(false)}
+                    >
+                      {/* <IoChatboxEllipsesOutline className="text-xl text-[#5E5E6D]" /> */}
+                      {/* <p>Enquiry</p> */}
+                    </div>
+                  </SheetTrigger>
+                  {/* <SheetContent> */}
+                    {/* <SheetHeader className="flex items-center justify-center py-6 text-white bg-primary_color"> */}
+                      {/* <SheetTitle>Enquiries</SheetTitle> */}
+                      <ChatsSection/>
+                    {/* </SheetHeader> */}
+                  {/* </SheetContent> */}
+                </Sheet>
+              </>
+            ) : null}
           </div>
           <hr />
           <div>
@@ -423,12 +430,12 @@ const Header = () => {
                             Profile
                           </li>
                         </Link>
-                      <Link href={"/myOrders"}>
-                      <li className="hover:bg-[#F5F5F5] text-base flex items-center gap-2 py-2 px-3">
-                          <PiNoteDuotone className="text-lg" />
-                          My Orders
-                        </li>
-                      </Link>
+                        <Link href={"/myOrders"}>
+                          <li className="hover:bg-[#F5F5F5] text-base flex items-center gap-2 py-2 px-3">
+                            <PiNoteDuotone className="text-lg" />
+                            My Orders
+                          </li>
+                        </Link>
                         <li
                           className="hover:bg-[#F5F5F5] text-[#F10000] text-base flex items-center gap-2 py-2 px-3"
                           onClick={() => hanldeLogoutFn()}

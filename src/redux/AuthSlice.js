@@ -89,10 +89,10 @@ export const handleResendOtp = createAsyncThunk(
 // Sign Up (with passcode and role)
 export const handleSignup = createAsyncThunk(
   "auth/handleSignup",
-  async ({ mobileNumber, passcode, role }, { rejectWithValue }) => {
+  async ({name, mobileNumber, passcode, role }, { rejectWithValue }) => {
     try {
       const { data } = await PostUrl("/auth/signup", {
-        data: { mobileNumber, passcode, role },
+        data: {name, mobileNumber, passcode, role },
         headers: {
           "Content-Type": "application/json",
         },
@@ -383,10 +383,11 @@ const AuthSlice = createSlice({
   initialState,
   reducers: {
     handleLogout: (state) => {
-      clearLocalStorage();
+      // clearLocalStorage();
       state.user = null;
       state.token = null;
       state.role = null;
+
     },
     setCredentials: (state, action) => {
       state.user = action.payload.user;
@@ -394,7 +395,7 @@ const AuthSlice = createSlice({
       state.role = action.payload.role;
       localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("token", action.payload.token);
-      localStorage.setItem('role', role); 
+      localStorage.setItem('role',  action.payload.role); 
     },
   },
   extraReducers: (builder) => {
